@@ -1,42 +1,124 @@
-generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum BoardRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
 model User {
-  id     String  @id @default(auto()) @map("_id") @db.ObjectId
-  email  String  @unique
-  name   String
-  tables Table[]
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  email        String        @unique
+  name         String
+  password     String
+  ownedBoards  Board[]       @relation("BoardsOwned")
+  memberships  BoardMember[]
+  createdTasks Task[]        @relation("TaskCreator")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Table {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  columns Column[]
-  ownerId String   @map("owner_id") @db.ObjectId
-  owner   User     @relation(fields: [ownerId], references: [id])
+//Representa a un tablero
+model Board {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+
+  // Creador de la board
+  ownerId String @db.ObjectId
+  owner   User   @relation("BoardsOwned", fields: [ownerId], references: [id])
+
+  // Miembros del tablero
+  members BoardMember[]
+
+  // Columnas del tablero
+  columns Column[] @relation("BoardColumns")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Task      Task[]
+
+  @@index([ownerId])
 }
 
+//Representa a un miembro del tablero
+model BoardMember {
+  // Join collection Usuario <-> Tablero con rol
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  boardId String    @db.ObjectId
+  userId  String    @db.ObjectId
+  role    BoardRole @default(VIEWER)
+
+  board Board @relation(fields: [boardId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  // Evita duplicados: un usuario no puede estar dos veces en el mismo tablero
+  @@unique([boardId, userId])
+  @@index([userId])
+  @@index([boardId, role])
+}
+
+//Representa a una columna del tablero
 model Column {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  boardId String @db.ObjectId
+  board   Board  @relation("BoardColumns", fields: [boardId], references: [id])
+
   name     String
-  dataType String
-  tableId  String @map("table_id") @db.ObjectId
-  table    Table  @relation(fields: [tableId], references: [id])
-  order    Int    @unique @map("column_order") @default(0)
+  position Int
+
+  // Tareas contenidas
+  tasks Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Restriccion para que no se repita la misma 'position' dentro del mismo board
+  @@unique([boardId, position])
+  @@index([boardId])
 }
 
+//Representa una tarea dentro de una columna
 model Task {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  title    String
-  content  String
-  status   String
-  ownerId  String   @map("owner_id") @db.ObjectId
-  owner    User     @relation(fields: [ownerId], references: [id])
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  columnId String @db.ObjectId
+  column   Column @relation(fields: [columnId], references: [id])
+
+  boardId String @db.ObjectId
+  board   Board  @relation(fields: [boardId], references: [id])
+
+
+  creatorId String? @db.ObjectId
+  creator   User?   @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  name        String
+  description String?    @db.String
+  status      TaskStatus @default(TODO)
+
+  position Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([columnId, position])
+  @@index([columnId])
+  @@index([boardId])
+  @@index([creatorId])
 }
