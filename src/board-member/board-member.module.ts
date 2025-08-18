@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ServicesService } from './services/board.member.service';
-import { ControllersController } from 'src/column/controllers/controllers.controller';
+import { BoardMemberService } from './services/board.member.service';
+import { BoardMemberController } from './controllers/board.member.controller';
 
 @Module({
-  providers: [ServicesService],
-  controllers: [ControllersController]
+  providers: [BoardMemberService],
+  controllers: [BoardMemberController]
 })
 export class BoardMemberModule {}

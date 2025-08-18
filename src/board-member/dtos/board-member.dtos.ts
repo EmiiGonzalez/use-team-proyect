@@ -1,10 +1,4 @@
-import {
-  IsEnum,
-  IsMongoId,
-  IsOptional,
-  IsInt,
-  Min
-} from 'class-validator';
+import { IsEnum, IsMongoId, IsOptional, IsInt, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum BoardRoleDto {
@@ -23,14 +17,21 @@ export class CreateBoardMemberDto {
   @IsMongoId()
   userId: string;
 
-  @ApiProperty({ enum: BoardRoleDto, default: BoardRoleDto.VIEWER, description: 'Rol del miembro' })
+  @ApiProperty({
+    enum: BoardRoleDto,
+    default: BoardRoleDto.VIEWER,
+    description: 'Rol del miembro'
+  })
   @IsEnum(BoardRoleDto)
   role: BoardRoleDto = BoardRoleDto.VIEWER;
 }
 
 // DTO para actualizar rol de un miembro
 export class UpdateBoardMemberDto {
-  @ApiPropertyOptional({ enum: BoardRoleDto, description: 'Nuevo rol del miembro' })
+  @ApiPropertyOptional({
+    enum: BoardRoleDto,
+    description: 'Nuevo rol del miembro'
+  })
   @IsOptional()
   @IsEnum(BoardRoleDto)
   role?: BoardRoleDto;
@@ -52,5 +53,4 @@ export class ListBoardMembersQueryDto {
   @IsOptional()
   @IsEnum(BoardRoleDto)
   role?: BoardRoleDto;
-
 }
