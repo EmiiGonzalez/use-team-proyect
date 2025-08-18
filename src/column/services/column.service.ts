@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException
@@ -6,7 +7,8 @@ import {
 import {
   CreateColumnDto,
   UpdateColumnDto,
-  ListColumnsQueryDto
+  ListColumnsQueryDto,
+  ListUpdatePositionDto
 } from '../dtos/column.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
 import { IUserRequest } from 'src/auth/decorators/get.user.decorators';
@@ -43,6 +45,38 @@ export class ColumnService {
   async update(id: string, dto: UpdateColumnDto) {
     await this.ensureExists(id);
     return this.prisma.column.update({ where: { id }, data: dto });
+  }
+
+  async updatePosition(boardId: string, dto: ListUpdatePositionDto[]) {
+    const positions = dto.map((item) => item.position);
+    const seen = new Set<number>();
+    for (const pos of positions) {
+      if (seen.has(pos)) {
+        throw new BadRequestException(
+          'No se permiten posiciones duplicadas en las columnas'
+        );
+      }
+      seen.add(pos);
+    }
+
+    const columns = await this.prisma.column.findMany({ where: { boardId } });
+
+    if (columns.length !== dto.length) {
+      throw new BadRequestException(
+        'El número de columnas a actualizar no coincide'
+      );
+    }
+
+    const updatePromises = dto.map((item) => {
+      const column = columns.find((col) => col.id === item.columnId);
+      if (!column) throw new NotFoundException('Columna no encontrada');
+      return this.prisma.column.update({
+        where: { id: column.id },
+        data: { position: item.position }
+      });
+    });
+
+    return Promise.all(updatePromises);
   }
 
   async remove(id: string, user: IUserRequest) {

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards
 } from '@nestjs/common';
@@ -13,7 +14,8 @@ import { ColumnService } from '../services/column.service';
 import {
   CreateColumnDto,
   UpdateColumnDto,
-  ListColumnsQueryDto
+  ListColumnsQueryDto,
+  ListUpdatePositionDto
 } from '../dtos/column.dtos';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { ColumnAccessGuard } from 'src/auth/guards/column.access.guard';
@@ -43,6 +45,11 @@ export class ColumnController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateColumnDto) {
     return this.service.update(id, dto);
+  }
+
+  @Put('/position/:boardId')
+  updatePosition(@Param('boardId') boardId: string, @Body() dto: ListUpdatePositionDto[]) {
+    return this.service.updatePosition(boardId, dto);
   }
 
   @Delete(':id')
