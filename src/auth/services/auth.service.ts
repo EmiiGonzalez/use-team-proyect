@@ -55,17 +55,18 @@ export class AuthService {
   }
 
   async findByEmail(email: string): Promise<UserResponseDto> {
-    const user = await this.prismaService.user.findUnique({
-      where: { email }
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        email: {
+          contains: email,
+          mode: 'insensitive'
+        }
+      }
     });
     if (!user) {
       throw new BadRequestException('Usuario no encontrado');
     }
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email
-    };
+    return new UserResponseDto(user);
   }
 
   async findOneByIdForAuth(id: string): Promise<UserResponseDto> {
@@ -75,10 +76,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
     }
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email
-    };
+    return new UserResponseDto(user);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Query } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { UserRegisterDto } from '../dtos/user.register.dto';
 import { UserLoginDto } from '../dtos/user.login.dto';
@@ -37,7 +37,7 @@ export class AuthController {
     return this.authService.login(body.email, body.password);
   }
 
-  @Get('email/:email')
+  @Get('email')
   @ApiOperation({ summary: 'Obtener usuario por email' })
   @ApiParam({ name: 'email', type: String })
   @ApiResponse({
@@ -45,7 +45,7 @@ export class AuthController {
     description: 'Usuario encontrado',
     type: UserResponseDto
   })
-  async getByEmail(@Param('email') email: string): Promise<UserResponseDto> {
+  async getByEmail(@Query('email') email: string): Promise<UserResponseDto> {
     return this.authService.findByEmail(email);
   }
 }
