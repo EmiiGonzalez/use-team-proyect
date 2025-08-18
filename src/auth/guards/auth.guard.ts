@@ -14,7 +14,7 @@ import { useToken } from 'src/shared/util/use.token';
 
 
 /**
- * @description Clase que implementa la interfaz CanActivate de NestJS para proteger las rutas de la aplicación con un token de autenticación.
+ * @description Este guards se encarga de validar los datos del token para permitir acceso
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
