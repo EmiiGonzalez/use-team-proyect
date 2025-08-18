@@ -31,7 +31,8 @@ export class ColumnAccessGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const userId: string = request['idUser']; // el usuario autenticado está en req.user del guard de autenticación
-    const { boardId }: CreateColumnDto = request.body; // Asumimos que el ID del board viene en el body (DTO)
+    let { boardId }: CreateColumnDto = request.body; // Asumimos que el ID del board viene en el body (DTO)
+      !boardId && (boardId = request.query.boardId); // o en los query params
 
     if (!userId || !boardId) {
       throw new UnauthorizedException(

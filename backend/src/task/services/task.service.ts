@@ -1,0 +1,86 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  ListTasksQueryDto,
+  UpdateTasksPositionDto
+} from '../dtos/task.dtos';
+import { PrismaService } from 'src/prisma/service/prisma.service';
+
+@Injectable()
+export class TaskService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(dto: CreateTaskDto) {
+    // busco el numero de la ultima tarea creada
+    const lastOrderTask = await this.prisma.task.findFirst({
+      where: { columnId: dto.columnId },
+      orderBy: { position: 'desc' }
+    });
+    dto.position = lastOrderTask ? lastOrderTask.position + 1 : 1;
+    return this.prisma.task.create({ data: dto });
+  }
+
+  findAll(query: ListTasksQueryDto) {
+    const { boardId, columnId } = query;
+    return this.prisma.task.findMany({
+      where: { boardId, columnId },
+      orderBy: [{ columnId: 'asc' }, { position: 'asc' }]
+    });
+  }
+
+  async findOne(id: string) {
+    const found = await this.prisma.task.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException('Task no encontrada');
+    return found;
+  }
+
+  async update(id: string, dto: UpdateTaskDto) {
+    await this.ensureExists(id);
+    return this.prisma.task.update({ where: { id }, data: dto });
+  }
+
+  async updatePosition(boardId: string, dto: UpdateTasksPositionDto) {
+      const positions = dto.tasks.map((item) => item.position);
+      const seen = new Set<number>();
+      for (const pos of positions) {
+        if (seen.has(pos)) {
+          throw new BadRequestException(
+            'No se permiten posiciones duplicadas en las columnas'
+          );
+        }
+        seen.add(pos);
+      }
+
+      const tasks = await this.prisma.task.findMany({ where: { boardId } });
+
+      if (tasks.length !== dto.tasks.length) {
+        throw new BadRequestException(
+          'El número de tareas a actualizar no coincide'
+        );
+      }
+
+      const updatePromises = dto.tasks.map((item) => {
+        const task = tasks.find((col) => col.id === item.taskId);
+        if (!task) throw new NotFoundException('Tarea no encontrada');
+        return this.prisma.task.update({
+          where: { id: task.id },
+          data: { position: item.position }
+        });
+      });
+  
+      return Promise.all(updatePromises);
+    }
+  
+
+  async remove(id: string) {
+    await this.ensureExists(id);
+    return this.prisma.task.delete({ where: { id } });
+  }
+
+  private async ensureExists(id: string) {
+    const exists = await this.prisma.task.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('Task no encontrada');
+  }
+}
