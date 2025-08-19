@@ -31,7 +31,7 @@ export function LoginForm() {
         onSuccess: (data) => {
           toast.success("¡Bienvenido de vuelta!");
           setToken(data.accessToken);
-          router.push("/dashboard");
+          router.push("/boards");
         },
         onError: (error: AxiosError<ApiErrorResponse>) => {
           toast.error(

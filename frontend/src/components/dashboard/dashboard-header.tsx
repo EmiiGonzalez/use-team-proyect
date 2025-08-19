@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export function DashboardHeader() {
-  const { user, logout } = useAuthStore()
+  const { clearToken: logout } = useAuthStore()
   const router = useRouter()
 
   const handleLogout = () => {
@@ -20,7 +20,7 @@ export function DashboardHeader() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tablero Kanban</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Bienvenido, {user?.name}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Bienvenido</p>
         </div>
         <div className="flex items-center space-x-4">
           <Button variant="outline" onClick={handleLogout}>

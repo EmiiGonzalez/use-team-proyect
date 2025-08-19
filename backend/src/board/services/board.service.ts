@@ -46,8 +46,7 @@ export class BoardService {
   async findAll(user: IUserRequest): Promise<BoardResponseDto[]> {
     const boards = await this.prisma.board.findMany({
       where: {
-        ownerId: user.id,
-        AND: { members: { some: { userId: user.id } } }
+        OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }]
       }
     });
     return boards.map((board) => new BoardResponseDto(board));

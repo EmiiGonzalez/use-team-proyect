@@ -39,6 +39,13 @@ export class BoardController {
     return this.boardService.findOne(id);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Obtener todos los boards' })
+  @ApiResponse({ status: 200, type: [BoardResponseDto] })
+  async findAll(@GetUser() user: IUserRequest): Promise<BoardResponseDto[]> {
+    return this.boardService.findAll(user);
+  }
+
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar un board' })
   @ApiResponse({ status: 200, type: BoardResponseDto })

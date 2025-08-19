@@ -1,8 +1,5 @@
 import axios from "axios";
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.endsWith("/")
-  ? process.env.NEXT_PUBLIC_BACKEND_URL
-  : process.env.NEXT_PUBLIC_BACKEND_URL + "/";
+import { backendUrl } from "./HttpClient";
 
 const authClient = axios.create({
   baseURL: backendUrl + "api/v1/auth",
