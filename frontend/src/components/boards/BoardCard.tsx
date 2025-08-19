@@ -17,7 +17,7 @@ export default function BoardCard({ board }: { board: BoardDTO }) {
         </p>
       </div>
       <div className="mt-4">
-        <Button onClick={() => router.push(`/boards/${board.id}`)}>
+        <Button onClick={() => router.push(`/dashboard/${board.id}`)}>
           Abrir tablero
         </Button>
       </div>

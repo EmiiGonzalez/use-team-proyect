@@ -10,12 +10,17 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { useKanbanStore } from "@/store/kanban-store"
 import { toast } from "sonner"
+import { useParams } from "next/navigation"
+import { useGetBoard } from "@/hooks/api/boards/useBoards"
 
 export function KanbanBoard() {
   const [newColumnTitle, setNewColumnTitle] = useState("")
   const [isAddingColumn, setIsAddingColumn] = useState(false)
   const [activeCard, setActiveCard] = useState<any>(null)
   const { columns, addColumn, loadBoard, moveCard } = useKanbanStore()
+  const { id } = useParams<{ id: string }>()
+
+  const { data: board } = useGetBoard(id);
 
   useEffect(() => {
     // Cargar el tablero al montar el componente
@@ -74,7 +79,7 @@ export function KanbanBoard() {
   return (
     <div className="h-full">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Mi Tablero</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{board?.name}</h2>
         <Button onClick={() => setIsAddingColumn(true)}>+ Agregar Columna</Button>
       </div>
 

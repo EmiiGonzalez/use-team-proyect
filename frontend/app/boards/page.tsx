@@ -3,10 +3,10 @@
 import BoardGrid from "@/components/boards/BoardGrid";
 
 import { CreateBoardDialog } from "@/components/boards/CreateBoardDialog";
-import { useBoards } from "@/hooks/api/boards/useBoards";
+import { useAllBoardsQuery } from "@/hooks/api/boards/useBoards";
 
 export default function BoardsPage() {
-  const { data, isLoading, error } = useBoards();
+  const { data, isLoading, error } = useAllBoardsQuery();
 
   return (
     <div className="space-y-6">
