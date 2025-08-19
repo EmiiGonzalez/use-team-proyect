@@ -1,64 +1,66 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useDroppable } from "@dnd-kit/core"
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { KanbanCard } from "./kanban-card"
-import { useKanbanStore } from "@/store/kanban-store"
-import { toast } from "sonner"
-
-interface Column {
-  id: string
-  title: string
-  cards: Array<{
-    id: string
-    title: string
-    description?: string
-    columnId: string
-  }>
-}
+import { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { KanbanCard } from "./kanban-card";
+import { useKanbanStore } from "@/store/kanban-store";
+import { toast } from "sonner";
+import { ColumnDTO } from "@/models/column/ColumnDTO";
+import { Trash2 } from "lucide-react";
+import { useDeleteColumn } from "@/hooks/api/column/useDeleteColumn";
 
 interface KanbanColumnProps {
-  column: Column
+  column: ColumnDTO;
+  boardId: string;
 }
 
-export function KanbanColumn({ column }: KanbanColumnProps) {
-  const [isAddingCard, setIsAddingCard] = useState(false)
-  const [newCardTitle, setNewCardTitle] = useState("")
-  const { addCard, deleteColumn } = useKanbanStore()
+export function KanbanColumn({ column, boardId }: KanbanColumnProps) {
+  const [isAddingCard, setIsAddingCard] = useState(false);
+  const [newCardTitle, setNewCardTitle] = useState("");
+  const { addCard } = useKanbanStore();
+
+  const { mutateAsync: deleteColumn, isPending } = useDeleteColumn();
 
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${column.id}`,
-  })
+  });
 
   const handleAddCard = async () => {
-    if (!newCardTitle.trim()) return
+    if (!newCardTitle.trim()) return;
 
     try {
-      await addCard(column.id, newCardTitle.trim())
-      setNewCardTitle("")
-      setIsAddingCard(false)
-      toast.success("Tarjeta creada")
+      await addCard(column.id, newCardTitle.trim());
+      setNewCardTitle("");
+      setIsAddingCard(false);
+      toast.success("Tarjeta creada");
     } catch (error) {
-      toast.error("Error al crear la tarjeta")
+      toast.error("Error al crear la tarjeta");
     }
-  }
+  };
 
   const handleDeleteColumn = async () => {
-    if (column.cards.length > 0) {
-      if (!confirm("¿Estás seguro? Esta columna tiene tarjetas.")) return
+    if (column.tasks.length > 0) {
+      if (!confirm("¿Estás seguro? Esta columna tiene tareas.")) return;
     }
-
-    try {
-      await deleteColumn(column.id)
-      toast.success("Columna eliminada")
-    } catch (error) {
-      toast.error("Error al eliminar la columna")
-    }
-  }
+    deleteColumn(
+      { columnId: column.id, idBoard: boardId },
+      {
+        onSuccess: () => {
+          toast.success("Columna eliminada");
+        },
+        onError: () => {
+          toast.error("Error al eliminar la columna");
+        },
+      }
+    );
+  };
 
   return (
     <Card
@@ -69,19 +71,29 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
     >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900 dark:text-white">{column.title}</h3>
-          <Button variant="ghost" size="sm" onClick={handleDeleteColumn} className="text-red-500 hover:text-red-700">
-            ×
+          <h3 className="font-semibold text-gray-900 dark:text-white">
+            {column.name}
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteColumn}
+            className="text-red-500 hover:text-red-700 p-2 cursor-pointer"
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-sm text-gray-500">
-          {column.cards.length} tarjeta{column.cards.length !== 1 ? "s" : ""}
+          {column.tasks.length} tarea{column.tasks.length !== 1 ? "s" : ""}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <SortableContext items={column.cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
-          {column.cards.map((card) => (
-            <KanbanCard key={card.id} card={card} />
+        <SortableContext
+          items={column.tasks.map((task) => task.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {column.tasks.map((task) => (
+            <KanbanCard key={task.id} task={task} />
           ))}
         </SortableContext>
 
@@ -92,10 +104,10 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
               value={newCardTitle}
               onChange={(e) => setNewCardTitle(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddCard()
+                if (e.key === "Enter") handleAddCard();
                 if (e.key === "Escape") {
-                  setIsAddingCard(false)
-                  setNewCardTitle("")
+                  setIsAddingCard(false);
+                  setNewCardTitle("");
                 }
               }}
               autoFocus
@@ -108,8 +120,8 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  setIsAddingCard(false)
-                  setNewCardTitle("")
+                  setIsAddingCard(false);
+                  setNewCardTitle("");
                 }}
               >
                 Cancelar
@@ -117,11 +129,15 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
             </div>
           </div>
         ) : (
-          <Button variant="ghost" className="w-full justify-start text-gray-500" onClick={() => setIsAddingCard(true)}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-gray-500"
+            onClick={() => setIsAddingCard(true)}
+          >
             + Agregar tarjeta
           </Button>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

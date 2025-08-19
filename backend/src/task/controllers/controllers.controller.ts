@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { TaskService } from '../services/task.service';
-import { CreateTaskDto, UpdateTaskDto, ListTasksQueryDto } from '../dtos/task.dtos';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { ColumnAccessGuard } from 'src/auth/guards/column.access.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CreateTaskDto } from '../dtos/create-task.dto';
+import { ListTasksQueryDto } from '../dtos/list-tasks-query.dto';
+import { UpdateTaskDto } from '../dtos/update-task.dto';
 
 @UseGuards(AuthGuard, ColumnAccessGuard)
 @ApiTags('Tasks')

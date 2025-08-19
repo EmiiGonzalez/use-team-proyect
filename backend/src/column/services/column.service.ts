@@ -7,33 +7,38 @@ import {
 import {
   CreateColumnDto,
   UpdateColumnDto,
-  ListColumnsQueryDto,
-  ListUpdatePositionDto
+  ListUpdatePositionDto,
+  ColumnDto
 } from '../dtos/column.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
 import { IUserRequest } from 'src/auth/decorators/get.user.decorators';
 import { Column } from '@prisma/client';
+import { log } from 'console';
 
 @Injectable()
 export class ColumnService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateColumnDto) {
+  async create(idBoard: string, dto: CreateColumnDto) {
     return this.prisma.column.create({
       data: {
         name: dto.name,
-        boardId: dto.boardId,
+        boardId: idBoard,
         position: dto.position
       }
     });
   }
 
-  async findAll(query: ListColumnsQueryDto) {
-    const { boardId } = query;
-    return this.prisma.column.findMany({
+  async findAll(boardId: string) {
+    const columns = await this.prisma.column.findMany({
       where: { boardId },
-      orderBy: { position: 'asc' }
+      orderBy: { position: 'asc' },
+      include: {
+        tasks: true
+      }
     });
+    
+    return columns.map((col) => new ColumnDto(col));
   }
 
   async findOne(id: string) {
@@ -79,16 +84,7 @@ export class ColumnService {
     return Promise.all(updatePromises);
   }
 
-  async remove(id: string, user: IUserRequest) {
-    const column = await this.ensureExists(id);
-    const board = await this.prisma.board.findUnique({
-      where: { id: column.boardId }
-    });
-    if (board?.ownerId !== user.id) {
-      throw new UnauthorizedException(
-        'No tienes permiso para eliminar esta columna'
-      );
-    }
+  async remove(id: string) {
     return this.prisma.column.delete({ where: { id } });
   }
 

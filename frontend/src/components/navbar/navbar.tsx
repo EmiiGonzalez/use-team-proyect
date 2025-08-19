@@ -1,19 +1,29 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth/auth-store";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { clearToken: logout } = useAuthStore();
   const [open, setOpen] = useState(false);
+  const [hideNavbar, setHideNavbar] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push("/");
   };
+
+  useEffect(() => {
+    setHideNavbar(pathname === "/" || pathname === "/login" || pathname === "/register");
+  }, [pathname])
+
+  if (hideNavbar) {
+    return null; // No mostrar la barra de navegación en estas rutas
+  }
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b shadow-sm sticky top-0 z-50">

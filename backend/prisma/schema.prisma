@@ -2,7 +2,7 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
- 
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,7 +27,6 @@ model User {
   password     String
   ownedBoards  Board[]       @relation("BoardsOwned")
   memberships  BoardMember[]
-  createdTasks Task[]        @relation("TaskCreator")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,7 +49,6 @@ model Board {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Task      Task[]
 
   @@index([ownerId])
 }
@@ -84,7 +82,7 @@ model Column {
   position Int
 
   // Tareas contenidas
-  tasks Task[]
+  tasks Task[] @relation("ColumnTasks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -99,14 +97,11 @@ model Task {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   columnId String @db.ObjectId
-  column   Column @relation(fields: [columnId], references: [id])
+  column   Column @relation("ColumnTasks", fields: [columnId], references: [id])
 
   boardId String @db.ObjectId
-  board   Board  @relation(fields: [boardId], references: [id])
-
 
   creatorId String? @db.ObjectId
-  creator   User?   @relation("TaskCreator", fields: [creatorId], references: [id])
 
   name        String
   description String?    @db.String

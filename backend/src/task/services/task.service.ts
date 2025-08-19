@@ -1,12 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import {
-  CreateTaskDto,
-  UpdateTaskDto,
-  ListTasksQueryDto,
-  UpdateTasksPositionDto
-} from '../dtos/task.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
+import { CreateTaskDto } from '../dtos/create-task.dto';
+import { ListTasksQueryDto } from '../dtos/list-tasks-query.dto';
+import { UpdateTaskDto, UpdateTasksPositionDto } from '../dtos/update-task.dto';
 
 @Injectable()
 export class TaskService {

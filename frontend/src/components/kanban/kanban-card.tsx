@@ -8,20 +8,15 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useKanbanStore } from "@/store/kanban-store"
 import { toast } from "sonner"
+import { TaskDTO } from "@/models/task/taskDto"
 
-interface CardData {
-  id: string
-  title: string
-  description?: string
-  columnId: string
-}
 
 interface KanbanCardProps {
-  card: CardData
+  task: TaskDTO
   isDragging?: boolean
 }
 
-export function KanbanCard({ card, isDragging = false }: KanbanCardProps) {
+export function KanbanCard({ task, isDragging = false }: KanbanCardProps) {
   const { deleteCard } = useKanbanStore()
 
   const {
@@ -32,7 +27,7 @@ export function KanbanCard({ card, isDragging = false }: KanbanCardProps) {
     transition,
     isDragging: isSortableDragging,
   } = useSortable({
-    id: card.id,
+    id: task.id,
   })
 
   const style = {
@@ -46,7 +41,7 @@ export function KanbanCard({ card, isDragging = false }: KanbanCardProps) {
     if (!confirm("¿Estás seguro de eliminar esta tarjeta?")) return
 
     try {
-      await deleteCard(card.id)
+      await deleteCard(task.id)
       toast.success("Tarjeta eliminada")
     } catch (error) {
       toast.error("Error al eliminar la tarjeta")
@@ -64,8 +59,8 @@ export function KanbanCard({ card, isDragging = false }: KanbanCardProps) {
       <CardContent className="p-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h4 className="font-medium text-sm text-gray-900 dark:text-white mb-1">{card.title}</h4>
-            {card.description && <p className="text-xs text-gray-600 dark:text-gray-400">{card.description}</p>}
+            <h4 className="font-medium text-sm text-gray-900 dark:text-white mb-1">{task.name}</h4>
+            {task.description && <p className="text-xs text-gray-600 dark:text-gray-400">{task.description}</p>}
           </div>
           <Button
             variant="ghost"

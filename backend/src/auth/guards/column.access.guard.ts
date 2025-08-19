@@ -6,12 +6,12 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PUBLIC_KEY } from 'src/shared/constants/key-decorators';
+import { CHECK_OWNER, PUBLIC_KEY } from 'src/shared/constants/key-decorators';
 import { PrismaService } from 'src/prisma/service/prisma.service';
-import { CreateColumnDto } from 'src/column/dtos/column.dtos';
+import { Column } from '@prisma/client';
 
 /**
- * @description Este guards se encarga de validar los datos del token para permitir acceso
+ * @description Este guards se encarga de validar los accesos a las columnas
  */
 @Injectable()
 export class ColumnAccessGuard implements CanActivate {
@@ -24,15 +24,34 @@ export class ColumnAccessGuard implements CanActivate {
       PUBLIC_KEY,
       context.getHandler()
     );
+    const checkOwner = this.reflector.get<boolean>(
+      CHECK_OWNER,
+      context.getHandler()
+    );
 
     if (isPublic) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const userId: string = request['idUser']; // el usuario autenticado está en req.user del guard de autenticación
-    let { boardId }: CreateColumnDto = request.body; // Asumimos que el ID del board viene en el body (DTO)
-      !boardId && (boardId = request.query.boardId); // o en los query params
+    const userId: string = request['idUser']; 
+    let { boardId } = request.params; 
+
+    if (!boardId) {
+      const { id } = request.params;
+      if (!id) {
+        throw new UnauthorizedException(
+          'No se proporcionó el ID de la columna'
+        );
+      }
+      const column: Column | null = await this.prisma.column.findUnique({
+        where: { id }
+      });
+      if (!column) {
+        throw new NotFoundException('Columna no encontrada');
+      }
+      boardId = column.boardId;
+    }
 
     if (!userId || !boardId) {
       throw new UnauthorizedException(
@@ -40,7 +59,6 @@ export class ColumnAccessGuard implements CanActivate {
       );
     }
 
-    //busco la board
     const board = await this.prisma.board.findUnique({
       where: { id: boardId }
     });
@@ -54,6 +72,10 @@ export class ColumnAccessGuard implements CanActivate {
     // si no es miembro ni creador lanzo la excepcion
     if (!isMember && board.ownerId !== userId) {
       throw new UnauthorizedException('Usuario no es miembro del board');
+    }
+
+    if (checkOwner && board.ownerId !== userId) {
+      throw new UnauthorizedException('No tienes permiso para acceder a este recurso');
     }
 
     return true;
