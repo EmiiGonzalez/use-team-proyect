@@ -155,13 +155,16 @@ export class TaskService {
       data: { position: dto.taskA.position, columnId: dto.taskA.columnId }
     });
 
+    this.eventsService.pub('board_updated', { boardId: taskA.boardId });
     return { message: 'Posiciones actualizadas correctamente' };
   }
 
   async remove(id: string) {
-    log(id);
-    await this.ensureExists(id);
-    return this.prisma.task.delete({ where: { id } });
+    const task = await this.ensureExists(id);
+
+    await this.prisma.task.delete({ where: { id } });
+    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    return { message: 'Tarea eliminada correctamente' };
   }
 
   private async ensureExists(id: string) {

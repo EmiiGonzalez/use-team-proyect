@@ -11,8 +11,7 @@ export const useSortColumns = ( data: ColumnDTO[] | undefined, setColumns: (colu
             tasks: [...(column.tasks ?? [])].sort(
               (a, b) => a.position - b.position
             ),
-          }))
-          .sort((a, b) => a.position - b.position) || []
+          })) || []
       );
     }
   }, [data, setColumns]);

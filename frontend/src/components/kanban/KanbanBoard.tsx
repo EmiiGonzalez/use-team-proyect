@@ -29,6 +29,7 @@ import { useReorderTask } from "@/hooks/board/useReorterTask";
 import { useReorderTaskInOtherColumn } from "@/hooks/board/useReorterTaskInOtherColumn";
 import { ColumnDTO } from "@/models/column/ColumnDTO";
 import { useSortColumns } from "@/hooks/board/useSortColumns";
+import { useBoardSocket } from "@/hooks/useBoardSocket";
 export const KanbanBoard = () => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [activeTask, setActiveTask] = useState<TaskDTO | null>(null);
@@ -39,8 +40,10 @@ export const KanbanBoard = () => {
   const [columns, setColumns] = useState<ColumnDTO[]>([]);
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const { data: board } = useGetBoard(id);
+  const { data: board } = useGetBoard(id);  
   const { data } = useAllColumnQuery(id);
+  
+  useBoardSocket({ boardId: id });
   const { reorderTask } = useReorderTask();
   const { reorderTaskInOtherColumn, removeTaskAndAddInNewColumn } =
     useReorderTaskInOtherColumn();
@@ -136,10 +139,7 @@ export const KanbanBoard = () => {
           )}
 
           {isAddingColumn && (
-            <AddColumnCard
-              setIsAddingColumn={setIsAddingColumn}
-              idBoard={id}
-            />
+            <AddColumnCard setIsAddingColumn={setIsAddingColumn} idBoard={id} />
           )}
         </div>
 

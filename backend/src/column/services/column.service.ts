@@ -57,6 +57,8 @@ export class ColumnService {
 
   async remove(id: string) {
     await this.prisma.task.deleteMany({ where: { columnId: id } });
+    const column = await this.ensureExists(id);
+    this.eventsService.pub('board_updated', { boardId: column.boardId });
     return this.prisma.column.delete({ where: { id } });
   }
 

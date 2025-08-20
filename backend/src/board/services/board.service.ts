@@ -31,6 +31,9 @@ export class BoardService {
         ownerId: user.id
       }
     });
+    await this.prisma.boardMember.create({
+      data: { boardId: board.id, userId: user.id, role: 'OWNER' }
+    })
     // Notificar a los usuarios del board
     this.eventsService.pub('board_updated', { boardId: board.id });
     return new BoardResponseDto(board);
