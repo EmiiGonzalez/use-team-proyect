@@ -2,6 +2,7 @@
 
 import { BoardGrid } from "@/components/boards/BoardGrid";
 import { CreateBoardDialog } from "@/components/boards/CreateBoardDialog";
+import { AssignMemberDialog } from "@/components/boards/dialog/AssignMemberDialog";
 import { useAllBoardsQuery } from "@/hooks/api/boards/useBoards";
 
 export default function BoardsPage() {
@@ -30,6 +31,8 @@ export default function BoardsPage() {
           )}
         </>
       )}
+
+      <AssignMemberDialog />
     </div>
   );
 }

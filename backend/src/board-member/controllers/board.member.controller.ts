@@ -50,7 +50,7 @@ export class BoardMemberController {
   })
   @ApiBody({ type: CreateBoardMemberDto })
   create(@Body() dto: CreateBoardMemberDto, @GetUser() user: IUserRequest) {
-    return this.service.create(dto);
+    return this.service.create(dto, user.id);
   }
 
   /**

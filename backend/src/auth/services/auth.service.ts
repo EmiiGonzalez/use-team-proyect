@@ -54,8 +54,8 @@ export class AuthService {
     return !!user;
   }
 
-  async findByEmail(email: string): Promise<UserResponseDto> {
-    const user = await this.prismaService.user.findFirst({
+  async findByEmail(email: string): Promise<UserResponseDto[]> {
+    const users = await this.prismaService.user.findMany({
       where: {
         email: {
           contains: email,
@@ -63,10 +63,7 @@ export class AuthService {
         }
       }
     });
-    if (!user) {
-      throw new BadRequestException('Usuario no encontrado');
-    }
-    return new UserResponseDto(user);
+    return users.map((user) => new UserResponseDto(user));
   }
 
   async findOneByIdForAuth(id: string): Promise<UserResponseDto> {

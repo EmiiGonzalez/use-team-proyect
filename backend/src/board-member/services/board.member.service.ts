@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateBoardMemberDto, UpdateBoardMemberDto, ListBoardMembersQueryDto } from '../dtos/board-member.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
+import { BoardMember } from '@prisma/client';
 
 @Injectable()
 export class BoardMemberService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreateBoardMemberDto) {
+  async create(dto: CreateBoardMemberDto, idUser: string) {
+    const boardMember : BoardMember | null = await this.prisma.boardMember.findUnique({
+      where: { boardId_userId: { boardId: dto.boardId, userId: idUser } },
+    });
+    if (boardMember?.role == 'VIEWER') throw new UnauthorizedException('No tienes permisos para realizar esto');
+
     return this.prisma.boardMember.create({ data: dto });
   }
 

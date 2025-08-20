@@ -1,3 +1,4 @@
+import { UserController } from './auth/controllers/auth.user.controller';
 import { SocketModule } from './socket/socket.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { Module } from '@nestjs/common';
@@ -21,7 +22,8 @@ import { EventsModule } from './events/event.module';
     ColumnModule,
     TaskModule
   ],
-  controllers: [],
+  controllers: [
+        UserController, ],
   providers: []
 })
 export class AppModule {}
