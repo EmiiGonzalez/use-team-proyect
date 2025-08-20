@@ -10,6 +10,8 @@ import { ChevronDown, ChevronRight, Trash2, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { statusConfig } from "@/components/utils/StatusConfig";
+import { useDeleteTask } from "@/hooks/api/task/useDeleteTask";
+import { toast } from "sonner";
 
 interface KanbanCardProps {
   task: TaskDTO;
@@ -23,6 +25,7 @@ export function KanbanCard({
   order,
 }: KanbanCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const { mutate: deleteTask } = useDeleteTask();
 
   const {
     attributes,
@@ -44,7 +47,17 @@ export function KanbanCard({
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("¿Estás seguro de eliminar esta tarjeta?")) return;
+    deleteTask({ columnId: task.columnId, taskId: task.id },
+      {
+        onSuccess: () => {
+         toast.success("Tarea eliminada correctamente");
+        },
+        onError: (error) => {
+          toast.error(error.response?.data.message || "Error al eliminar la tarea");
+        }
+      }
+    );
+    return;
   };
 
   const toggleDescription = (e: React.MouseEvent) => {

@@ -51,6 +51,7 @@ export class ColumnService {
   }
 
   async remove(id: string) {
+    await this.prisma.task.deleteMany({ where: { columnId: id } });
     return this.prisma.column.delete({ where: { id } });
   }
 

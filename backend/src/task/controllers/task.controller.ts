@@ -3,11 +3,9 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Param,
   Patch,
   Post,
-  Query,
   UseGuards
 } from '@nestjs/common';
 import { TaskService } from '../services/task.service';
@@ -22,14 +20,12 @@ import {
 import { CreateTaskDto } from '../dtos/create.task.dto';
 import {
   UpdateTaskDto,
-  UpdateTaskPositionInDiferentColumns,
   UpdateTasksPositionDto
 } from '../dtos/update.task.dto';
 import { TaskAccessGuard } from 'src/auth/guards/task.access.guard';
 import { GetUser } from 'src/auth/decorators/get.user.decorator';
 import type { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 import { GetIdBoard } from 'src/auth/decorators/get.idboard.decorator';
-import { PassCheck } from 'src/auth/decorators/pass.check.decorator';
 
 @UseGuards(AuthGuard, TaskAccessGuard)
 @ApiTags('Tasks')
@@ -130,7 +126,7 @@ export class TaskController {
   @ApiParam({ name: 'id', description: 'ID de la tarea', type: String })
   @ApiResponse({ status: 200, description: 'Tarea eliminada' })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  remove(@Param('id') id: string) {
+  remove(@Body() {id}: { id: string }) {
     return this.service.remove(id);
   }
 }

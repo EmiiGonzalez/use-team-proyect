@@ -34,9 +34,6 @@ export const KanbanColumn = ({ column }: KanbanColumnProps) => {
   });
 
   const handleDeleteColumn = async () => {
-    if (column.tasks.length > 0) {
-      if (!confirm("¿Estás seguro? Esta columna tiene tareas.")) return;
-    }
     deleteColumn(column.id, {
       onSuccess: () => {
         toast.success("Columna eliminada");

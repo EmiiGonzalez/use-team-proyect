@@ -13,6 +13,7 @@ import {
   UpdateTasksPositionDto
 } from '../dtos/update.task.dto';
 import { Task } from '@prisma/client';
+import { log } from 'console';
 
 @Injectable()
 export class TaskService {
@@ -150,6 +151,7 @@ export class TaskService {
   }
 
   async remove(id: string) {
+    log(id)
     await this.ensureExists(id);
     return this.prisma.task.delete({ where: { id } });
   }

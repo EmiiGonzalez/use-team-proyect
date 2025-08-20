@@ -29,8 +29,7 @@ export class TaskAccessGuard implements CanActivate {
       PASS_CHECK,
       context.getHandler()
     );
-    // Verifica si el decorador PASS_CHECK está presente
-    log('PASS_CHECK:', passCheck);
+
     if (passCheck) {
       return true;
     }
