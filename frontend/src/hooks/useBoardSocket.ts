@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSocket } from "@/components/webSocketProvider";
+import { useAuthStore } from "@/store/auth/auth-store";
+import { toast } from "sonner";
 
 interface UseBoardSocketProps {
   boardId: string;
@@ -11,12 +13,25 @@ interface UseBoardSocketProps {
 export const useBoardSocket = ({ boardId }: UseBoardSocketProps) => {
   const { socket, isConnected, boardUpdates, clearBoardUpdates } = useSocket();
   const queryClient = useQueryClient();
+  const { id: idUser } = useAuthStore();
 
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     // Listener específico para actualizaciones del board
-    const handleBoardUpdate = () => {
+    const handleBoardUpdate = ({
+      boardId,
+      userId,
+    }: {
+      boardId: string;
+      userId: string;
+    }) => {
+      if (boardId !== boardId) return; // Solo manejar actualizaciones del board actual
+
+      if (userId == idUser) {
+        return; // Ignorar actualizaciones del propio usuario
+      }
+
       // Invalidar queries relacionadas con el board
       queryClient.invalidateQueries({
         queryKey: ["board"],
@@ -26,6 +41,7 @@ export const useBoardSocket = ({ boardId }: UseBoardSocketProps) => {
         queryKey: ["columns", boardId],
       });
 
+      toast.info("El tablero ha sido actualizado");
     };
 
     socket.on("board_updated", handleBoardUpdate);

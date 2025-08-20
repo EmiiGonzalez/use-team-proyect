@@ -93,10 +93,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       setIsConnected(false);
     });
 
-    newSocket.on("board_updated", (data: { boardId: string }) => {
+    newSocket.on("board_updated", (data: { boardId: string, userId: string }) => {
       console.log("Board actualizado:", data.boardId);
       setBoardUpdates((prev) => [...prev, data.boardId]);
-      toast.info("El tablero ha sido actualizado");
     });
 
     newSocket.on("connect_error", () => {
