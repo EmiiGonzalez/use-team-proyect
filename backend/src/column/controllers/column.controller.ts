@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   UseGuards
 } from '@nestjs/common';
 import {
@@ -14,14 +13,11 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiParam,
-  ApiQuery
-} from '@nestjs/swagger';
+  ApiParam} from '@nestjs/swagger';
 import { ColumnService } from '../services/column.service';
 import {
   CreateColumnDto,
   UpdateColumnDto,
-  ListUpdatePositionDto,
   ColumnDto
 } from '../dtos/column.dtos';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
@@ -40,8 +36,12 @@ export class ColumnController {
   @ApiOperation({ summary: 'Crear columna' })
   @ApiBody({ type: CreateColumnDto })
   @ApiResponse({ status: 201, description: 'Columna creada exitosamente.' })
-  create(@Param('boardId') boardId: string, @Body() dto: CreateColumnDto) {
-    return this.service.create(boardId, dto);
+  create(
+    @Param('boardId') boardId: string,
+    @Body() dto: CreateColumnDto,
+    @GetUser() user: IUserRequest
+  ) {
+    return this.service.create(boardId, dto, user.id);
   }
 
   @Get('/all/:boardId')
@@ -75,17 +75,20 @@ export class ColumnController {
   @ApiBody({ type: UpdateColumnDto })
   @ApiResponse({ status: 200, description: 'Columna actualizada.' })
   @CheckOwner()
-  update(@Param('id') id: string, @Body() dto: UpdateColumnDto) {
-    return this.service.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateColumnDto,
+    @GetUser() user: IUserRequest
+  ) {
+    return this.service.update(id, dto, user.id);
   }
-
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar columna' })
   @ApiParam({ name: 'id', type: String, description: 'ID de la columna' })
   @ApiResponse({ status: 200, description: 'Columna eliminada.' })
   @CheckOwner()
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(@Param('id') id: string, @GetUser() user: IUserRequest) {
+    return this.service.remove(id, user.id);
   }
 }

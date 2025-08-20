@@ -104,14 +104,15 @@ export class TaskController {
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   updateTasksPosition(
     @Param('id') id: string,
-    @Body() dto: UpdateTasksPositionDto
+    @Body() dto: UpdateTasksPositionDto,
+    @GetUser() user: IUserRequest
   ) {
     if (dto.columnId !== id) {
       throw new BadRequestException(
         'No se pueden actualizar tareas en columnas diferentes'
       );
     }
-    return this.service.updatePosition(dto);
+    return this.service.updatePosition(dto, user.id);
   }
 
   /**
@@ -126,8 +127,8 @@ export class TaskController {
   @ApiParam({ name: 'id', description: 'ID de la tarea', type: String })
   @ApiResponse({ status: 200, description: 'Tarea eliminada' })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  remove(@Body() {id}: { id: string }) {
-    return this.service.remove(id);
+  remove(@Body() {id}: { id: string }, @GetUser() user: IUserRequest) {
+    return this.service.remove(id, user.id);
   }
 
 

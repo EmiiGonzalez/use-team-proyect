@@ -1,6 +1,4 @@
-import {
-  Injectable,
-  NotFoundException} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   CreateColumnDto,
   UpdateColumnDto,
@@ -17,14 +15,17 @@ export class ColumnService {
     private readonly eventsService: EventsService
   ) {}
 
-  async create(idBoard: string, dto: CreateColumnDto) {
+  async create(idBoard: string, dto: CreateColumnDto, idUser: string) {
     const column = await this.prisma.column.create({
       data: {
         name: dto.name,
         boardId: idBoard
       }
     });
-    this.eventsService.pub('board_updated', { boardId: idBoard });
+    this.eventsService.pub('board_updated', {
+      boardId: idBoard,
+      userId: idUser
+    });
     return column;
   }
 
@@ -45,20 +46,27 @@ export class ColumnService {
     return found;
   }
 
-  async update(id: string, dto: UpdateColumnDto) {
+  async update(id: string, dto: UpdateColumnDto, idUser: string) {
     const column = await this.ensureExists(id);
     const updated = await this.prisma.column.update({
       where: { id },
       data: dto
     });
-    this.eventsService.pub('board_updated', { boardId: column.boardId });
+    this.eventsService.pub('board_updated', {
+      boardId: column.boardId,
+      userId: idUser
+    });
     return updated;
   }
 
-  async remove(id: string) {
+  async remove(id: string, idUser: string) {
     await this.prisma.task.deleteMany({ where: { columnId: id } });
     const column = await this.ensureExists(id);
-    this.eventsService.pub('board_updated', { boardId: column.boardId });
+    this.eventsService.pub('board_updated', {
+      boardId: column.boardId,
+      userId: idUser
+    });
+
     return this.prisma.column.delete({ where: { id } });
   }
 

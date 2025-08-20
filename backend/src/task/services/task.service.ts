@@ -46,7 +46,7 @@ export class TaskService {
         position: lastOrderTask ? lastOrderTask.position + 1 : 1
       }
     });
-    this.eventsService.pub('board_updated', { boardId });
+    this.eventsService.pub('board_updated', { boardId, userId: idUser });
     return task;
   }
 
@@ -88,7 +88,7 @@ export class TaskService {
           dto.position < 0 ? -Math.abs(dto.position) : Math.abs(dto.position)
       }
     });
-    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
     return updated;
   }
   async updateSimpleData(idColumn: string, dto: UpdateTaskDto, idUser: string) {
@@ -120,11 +120,11 @@ export class TaskService {
         status: dto.status,
       }
     });
-    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
     return updated;
   }
 
-  async updatePosition(dto: UpdateTasksPositionDto) {
+  async updatePosition(dto: UpdateTasksPositionDto, idUser: string) {
     const positions = dto.tasks.map((item) => item.position);
     const seen = new Set<number>();
     for (const pos of positions) {
@@ -148,6 +148,8 @@ export class TaskService {
         data: { position: item.position }
       });
     }
+
+    this.eventsService.pub('board_updated', { boardId: tasks[0].boardId, userId: idUser });
     return { message: 'Posiciones actualizadas correctamente' };
   }
 
@@ -187,15 +189,15 @@ export class TaskService {
       data: { position: dto.taskA.position, columnId: dto.taskA.columnId }
     });
 
-    this.eventsService.pub('board_updated', { boardId: taskA.boardId });
+    this.eventsService.pub('board_updated', { boardId: taskA.boardId, userId: idUser });
     return { message: 'Posiciones actualizadas correctamente' };
   }
 
-  async remove(id: string) {
+  async remove(id: string, idUser: string) {
     const task = await this.ensureExists(id);
 
     await this.prisma.task.delete({ where: { id } });
-    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
     return { message: 'Tarea eliminada correctamente' };
   }
 

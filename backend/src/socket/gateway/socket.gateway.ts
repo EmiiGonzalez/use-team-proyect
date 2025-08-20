@@ -29,8 +29,8 @@ export class BoardGateway
   onModuleInit() {
     this.eventsService['eventEmitter'].on(
       'board_updated',
-      (data: { boardId: string }) => {
-        this.notifyBoardUpdate(data.boardId);
+      (data: { boardId: string, userId: string }) => {
+        this.notifyBoardUpdate(data.boardId, data.userId);
       }
     );
   }
@@ -119,8 +119,8 @@ export class BoardGateway
     }
   }
 
-  // Método público para notificar cambios en un board (id)
-  notifyBoardUpdate(boardId: string) {
-    this.server.to(`board_${boardId}`).emit('board_updated', { boardId });
+  // Método público para notificar cambios en un board (id) y el usuario que realizó el cambio
+  notifyBoardUpdate(boardId: string, userId: string) {
+    this.server.to(`board_${boardId}`).emit('board_updated', { boardId, userId });
   }
 }
