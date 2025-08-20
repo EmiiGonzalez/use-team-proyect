@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth/auth-store";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -8,19 +8,24 @@ import { Menu } from "lucide-react";
 
 export const Navbar = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  const { clearToken: logout } = useAuthStore();
+  const { clearToken: logout, token } = useAuthStore();
   const [open, setOpen] = useState(false);
-  const [hideNavbar] = useState(
-    pathname === "/" || pathname === "/login" || pathname === "/register"
-  );
+  const [showNavbar, setShowNavbar] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push("/");
   };
 
-  if (hideNavbar) {
+  useEffect(() => {
+    if (token) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  }, [setShowNavbar, token]);
+
+  if (!showNavbar) {
     return <></>; // No mostrar la barra de navegación en estas rutas
   }
 
