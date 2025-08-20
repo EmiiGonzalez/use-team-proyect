@@ -49,7 +49,7 @@ export const useBoardSocket = ({ boardId }: UseBoardSocketProps) => {
     return () => {
       socket.off("board_updated", handleBoardUpdate);
     };
-  }, [socket, isConnected, queryClient]);
+  }, [socket, isConnected, queryClient, boardId, idUser]);
 
   // Detectar si el board actual fue actualizado
   const isBoardUpdated = boardId ? boardUpdates.includes(boardId) : false;
