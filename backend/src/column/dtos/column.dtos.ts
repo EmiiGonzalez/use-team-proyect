@@ -15,14 +15,6 @@ export class CreateColumnDto {
   @IsString({ message: 'El nombre debe ser una cadena de texto.' })
   @IsNotEmpty({ message: 'El nombre no puede estar vacío.' })
   name: string;
-
-  @ApiProperty({
-    example: 0,
-    description: 'Posición de la columna en el board'
-  })
-  @IsInt({ message: 'La posición debe ser un número entero.' })
-  @Min(0, { message: 'La posición debe ser mayor o igual a 0.' })
-  position: number;
 }
 
 export class UpdateColumnDto {
@@ -62,15 +54,11 @@ export class ColumnDto {
   @ApiProperty({ example: 'Doing', description: 'Nombre de la columna' })
   name: string;
 
-  @ApiProperty({ example: 1, description: 'Posición de la columna' })
-  position: number;
-
   tasks: TaskResponseDto[];
 
   constructor(column: ColumnWithTasks) {
     this.id = column.id;
     this.name = column.name;
-    this.position = column.position;
     this.tasks = column.tasks.map(task => new TaskResponseDto(task));
   }
 }

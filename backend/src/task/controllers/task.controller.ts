@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,12 +20,16 @@ import {
   ApiBody
 } from '@nestjs/swagger';
 import { CreateTaskDto } from '../dtos/create.task.dto';
-import { ListTasksQueryDto } from '../dtos/list.task.query.dto';
-import { UpdateTaskDto } from '../dtos/update.task.dto';
+import {
+  UpdateTaskDto,
+  UpdateTaskPositionInDiferentColumns,
+  UpdateTasksPositionDto
+} from '../dtos/update.task.dto';
 import { TaskAccessGuard } from 'src/auth/guards/task.access.guard';
 import { GetUser } from 'src/auth/decorators/get.user.decorator';
 import type { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 import { GetIdBoard } from 'src/auth/decorators/get.idboard.decorator';
+import { PassCheck } from 'src/auth/decorators/pass.check.decorator';
 
 @UseGuards(AuthGuard, TaskAccessGuard)
 @ApiTags('Tasks')
@@ -59,28 +64,8 @@ export class TaskController {
   }
 
   /**
-   * Obtiene una tarea por ID
-   * @param id ID de la tarea
-   */
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Obtener una tarea por ID',
-    description: 'Obtiene la información de una tarea específica.'
-  })
-  @ApiParam({ name: 'id', description: 'ID de la tarea', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Tarea encontrada',
-    type: CreateTaskDto
-  })
-  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
-  }
-
-  /**
    * Actualiza una tarea
-   * @param id ID de la tarea
+   * @param id ID de la columna a la que pertenece la tarea
    * @param dto Datos de actualización
    */
   @Patch(':id')
@@ -96,8 +81,41 @@ export class TaskController {
     type: UpdateTaskDto
   })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  update(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
-    return this.service.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+    @GetUser() user: IUserRequest
+  ) {
+    return this.service.update(id, dto, user.id);
+  }
+
+  /**
+   * Actualiza una tarea
+   * @param id ID de la columna a la que pertenece la tarea
+   * @param dto Datos de actualización
+   */
+  @Patch('update/tasks/:id')
+  @ApiOperation({
+    summary: 'Actualiza el orden de las tareas',
+    description: 'Actualiza los datos de tareas en una misma columna.'
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tarea', type: String })
+  @ApiBody({ type: UpdateTaskDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarea actualizada'
+  })
+  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
+  updateTasksPosition(
+    @Param('id') id: string,
+    @Body() dto: UpdateTasksPositionDto
+  ) {
+    if (dto.columnId !== id) {
+      throw new BadRequestException(
+        'No se pueden actualizar tareas en columnas diferentes'
+      );
+    }
+    return this.service.updatePosition(dto);
   }
 
   /**

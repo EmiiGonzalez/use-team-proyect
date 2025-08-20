@@ -79,17 +79,6 @@ export class ColumnController {
     return this.service.update(id, dto);
   }
 
-  @Put('/position/:boardId')
-  @ApiOperation({ summary: 'Actualizar posiciones de columnas' })
-  @ApiParam({ name: 'boardId', type: String, description: 'ID del board' })
-  @ApiBody({ type: [ListUpdatePositionDto] })
-  @ApiResponse({ status: 200, description: 'Posiciones actualizadas.' })
-  updatePosition(
-    @Param('boardId') boardId: string,
-    @Body() dto: ListUpdatePositionDto[]
-  ) {
-    return this.service.updatePosition(boardId, dto);
-  }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar columna' })

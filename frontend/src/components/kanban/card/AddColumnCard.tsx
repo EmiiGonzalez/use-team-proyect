@@ -2,10 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useCreateColumn } from "@/hooks/api/column/useCreateColumn";
-import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
 import { CreateColumnForm } from "@/types/board/column/createColumnForm";
-import { AxiosError } from "axios";
-import { is } from "date-fns/locale";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -13,12 +10,10 @@ import { toast } from "sonner";
 interface AddColumnCardProps {
   setIsAddingColumn: (isAdding: boolean) => void;
   idBoard: string;
-  lastColumnPosition: number;
 }
 export const AddColumnCard = ({
   setIsAddingColumn,
   idBoard,
-  lastColumnPosition
 }: AddColumnCardProps) => {
   const {
     register,
@@ -31,7 +26,6 @@ export const AddColumnCard = ({
   const { mutateAsync: createColumn, isPending } = useCreateColumn();
 
   const handleAddColumn = async (data: CreateColumnForm) => {
-    data.position = lastColumnPosition + 1;
     await createColumn(
       { data, idBoard },
       {

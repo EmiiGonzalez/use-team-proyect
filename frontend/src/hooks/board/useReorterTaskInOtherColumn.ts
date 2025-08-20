@@ -1,23 +1,36 @@
 import { ColumnDTO } from "@/models/column/ColumnDTO";
 import { TaskDTO } from "@/models/task/taskDTO";
+import {
+  useUpdateTask,
+  useUpdateTasksPositionInDifferentColumns,
+} from "../api/task/useUpdateTask";
+import { toast } from "sonner";
 
 export const useReorderTaskInOtherColumn = () => {
+  const { mutateAsync: updateTask } = useUpdateTask();
+  const { mutateAsync: updateTasksPositionInDifferentColumns } =
+    useUpdateTasksPositionInDifferentColumns();
 
-  const reorderTaskInOtherColumn = (
+  const reorderTaskInOtherColumn = async (
     activeTask: TaskDTO,
     overTask: TaskDTO,
     columns: ColumnDTO[]
   ) => {
     const oldColumn = columns.find((col) => col.id === activeTask.columnId);
     const newColumn = columns.find((col) => col.id === overTask.columnId);
-    const oldIndex = oldColumn?.tasks.findIndex((task) => task.id === activeTask.id) ?? -1;
-    const newIndex = newColumn?.tasks.findIndex((task) => task.id === overTask.id) ?? -1;
+    const oldIndex =
+      oldColumn?.tasks.findIndex((task) => task.id === activeTask.id) ?? -1;
+    const newIndex =
+      newColumn?.tasks.findIndex((task) => task.id === overTask.id) ?? -1;
     if (!oldColumn || !newColumn || oldIndex < 0 || newIndex < 0) {
       return columns;
     }
 
     // Copias profundas para evitar mutar el estado original
-    const updatedColumns = columns.map((col) => ({ ...col, tasks: [...col.tasks] }));
+    const updatedColumns = columns.map((col) => ({
+      ...col,
+      tasks: [...col.tasks],
+    }));
     const oldCol = updatedColumns.find((col) => col.id === oldColumn.id)!;
     const newCol = updatedColumns.find((col) => col.id === newColumn.id)!;
 
@@ -42,34 +55,98 @@ export const useReorderTaskInOtherColumn = () => {
     //enviar put con el cambio de column al backend
     console.log("updateando cambios", active, over);
 
-    return updatedColumns.map(col => ({ ...col, tasks: [...col.tasks] }));
+    let updateColumns: ColumnDTO[] = [];
+
+    //chequeo que haya cambios
+    if (
+      active.columnId !== over.columnId ||
+      active.position !== over.position
+    ) {
+      await updateTasksPositionInDifferentColumns(
+        {
+          taskA: {
+            columnId: active.columnId,
+            position: active.position,
+            taskId: active.id,
+          },
+          taskB: {
+            columnId: over.columnId,
+            position: over.position,
+            taskId: over.id,
+          },
+        },
+        {
+          onError: (error) => {
+            toast.error(
+              error.response?.data.message || "Error al actualizar la tarea"
+            );
+            updateColumns = columns;
+          },
+          onSettled: () => {
+            updateColumns = updatedColumns.map((col) => ({
+              ...col,
+              tasks: [...col.tasks],
+            }));
+          },
+        }
+      );
+    }
+
+    return updateColumns;
   };
 
-  const removeTaskAndAddInNewColumn = (task: TaskDTO, column: ColumnDTO, columns: ColumnDTO[]) => {
+  const removeTaskAndAddInNewColumn = async (
+    task: TaskDTO,
+    column: ColumnDTO,
+    columns: ColumnDTO[]
+  ) => {
     if (task.columnId === column.id) {
       return columns;
     }
-    let taskUpdated: TaskDTO | null = null;
-    const updatedColumns = columns.map((col) => {
+    let taskUpdated: TaskDTO = undefined!;
+    let updatedColumns = columns.map((col) => {
       if (col.id === task.columnId) {
-      return {
-        ...col,
-        tasks: col.tasks.filter((t) => t.id !== task.id),
-      };
+        return {
+          ...col,
+          tasks: col.tasks.filter((t) => t.id !== task.id),
+        };
       }
       if (col.id === column.id) {
-      const updatedTask = { ...task, columnId: col.id };
-      taskUpdated = updatedTask;
-      return {
-        ...col,
-        tasks: [...col.tasks, updatedTask],
-      };
+        const updatedTask: TaskDTO = { ...task, columnId: col.id };
+        taskUpdated = updatedTask;
+        return {
+          ...col,
+          tasks: [...col.tasks, updatedTask],
+        };
       }
       return col;
     });
     //enviar put con el cambio de column al backend
-    if (taskUpdated) {
-      console.log("updateando cambios", taskUpdated)
+    if (taskUpdated != undefined) {
+      const lastOrderInColumn = Math.max(
+        ...column.tasks.map((t) => t.position),
+        0
+      );
+      await updateTask(
+        {
+          columnId: taskUpdated.columnId,
+          position: lastOrderInColumn + 1,
+          description: taskUpdated.description
+            ? taskUpdated.description
+            : undefined,
+          name: taskUpdated.name,
+          id: taskUpdated.id,
+          status: taskUpdated.status,
+        },
+        {
+          onError: (error) => {
+            toast.error(
+              error.response?.data.message || "Error al actualizar la tarea"
+            );
+            updatedColumns = columns;
+          },
+        }
+      );
     }
     return updatedColumns;
   };

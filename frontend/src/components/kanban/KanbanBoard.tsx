@@ -47,11 +47,6 @@ export const KanbanBoard = () => {
 
   useSortColumns(data, setColumns);
 
-  const lastColumnPosition =
-    columns && columns.length > 0
-      ? Math.max(...columns.map((col) => col.position))
-      : 0;
-
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const taskId = active.id as string;
@@ -78,7 +73,9 @@ export const KanbanBoard = () => {
       if (!overColumn) {
         return;
       }
-      setColumns(removeTaskAndAddInNewColumn(activeTask, overColumn, columns));
+      setColumns(
+        await removeTaskAndAddInNewColumn(activeTask, overColumn, columns)
+      );
       //si ubo cambios notifico
       if (
         overColumn.tasks.length !==
@@ -91,7 +88,7 @@ export const KanbanBoard = () => {
 
     const overTask = over.data.current?.task as TaskDTO;
     if (overTask.columnId == activeTask.columnId) {
-      setColumns(reorderTask(activeTask, overTask, columns));
+      setColumns(await reorderTask(activeTask, overTask, columns));
       //corroboro que haya cambios
       if (
         overTask.position !==
@@ -102,7 +99,7 @@ export const KanbanBoard = () => {
         toast.success("Tarea movida exitosamente");
       }
     } else {
-      setColumns(reorderTaskInOtherColumn(activeTask, overTask, columns));
+      setColumns(await reorderTaskInOtherColumn(activeTask, overTask, columns));
       toast.success("Tarea movida exitosamente a otra columna");
     }
 
@@ -142,7 +139,6 @@ export const KanbanBoard = () => {
             <AddColumnCard
               setIsAddingColumn={setIsAddingColumn}
               idBoard={id}
-              lastColumnPosition={lastColumnPosition}
             />
           )}
         </div>

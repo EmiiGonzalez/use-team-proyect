@@ -6,9 +6,14 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { CHECK_OWNER, PUBLIC_KEY } from 'src/shared/constants/key-decorators';
+import {
+  CHECK_OWNER,
+  PUBLIC_KEY,
+  PASS_CHECK
+} from 'src/shared/constants/key-decorators';
 import { PrismaService } from 'src/prisma/service/prisma.service';
 import { Column } from '@prisma/client';
+import { log } from 'console';
 
 /**
  * @description Este guards se encarga de validar los accesos a las columnas
@@ -20,18 +25,27 @@ export class TaskAccessGuard implements CanActivate {
     private readonly reflector: Reflector
   ) {}
   async canActivate(context: ExecutionContext) {
+    const passCheck = this.reflector.get<boolean>(
+      PASS_CHECK,
+      context.getHandler()
+    );
+    // Verifica si el decorador PASS_CHECK está presente
+    log('PASS_CHECK:', passCheck);
+    if (passCheck) {
+      return true;
+    }
     const isPublic = this.reflector.get<boolean>(
       PUBLIC_KEY,
       context.getHandler()
     );
+    if (isPublic) {
+      return true;
+    }
     const checkOwner = this.reflector.get<boolean>(
       CHECK_OWNER,
       context.getHandler()
     );
 
-    if (isPublic) {
-      return true;
-    }
     const request = context.switchToHttp().getRequest();
     const userId: string = request['idUser'];
 
@@ -51,7 +65,7 @@ export class TaskAccessGuard implements CanActivate {
 
     if (!userId || !column.boardId) {
       throw new UnauthorizedException(
-        `${!userId ? 'No se proporcionó el ID del usuario' : 'El board no existe' }`
+        `${!userId ? 'No se proporcionó el ID del usuario' : 'El board no existe'}`
       );
     }
 

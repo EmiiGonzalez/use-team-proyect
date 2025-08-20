@@ -79,7 +79,6 @@ model Column {
   board   Board  @relation("BoardColumns", fields: [boardId], references: [id])
 
   name     String
-  position Int
 
   // Tareas contenidas
   tasks Task[] @relation("ColumnTasks")
@@ -87,8 +86,6 @@ model Column {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Restriccion para que no se repita la misma 'position' dentro del mismo board
-  @@unique([boardId, position])
   @@index([boardId])
 }
 
@@ -112,7 +109,6 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([columnId, position])
   @@index([columnId])
   @@index([boardId])
   @@index([creatorId])
