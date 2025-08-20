@@ -76,7 +76,16 @@ El backend estará disponible en `http://localhost:3030` (o el puerto que defina
 
 ### 1. Configura variables de entorno (opcional)
 
-Si necesitas variables de entorno para el frontend, crea un archivo `.env.local` en la carpeta `frontend/` y agrega tus variables (por ejemplo, la URL del backend).
+Debes crear un archivo `.env` en la carpeta `frontend` con las siguientes variables de ejemplo:
+
+```env
+#Apis
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3030
+#Para los websocket
+NEXT_PUBLIC_API_URL=http://localhost:3030
+#Url del front
+FRONTEND_URL=http://localhost:3000
+```
 
 ### 2. Instala dependencias
 
