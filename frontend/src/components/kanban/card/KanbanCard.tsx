@@ -14,9 +14,14 @@ import { statusConfig } from "@/components/utils/StatusConfig";
 interface KanbanCardProps {
   task: TaskDTO;
   isDragging?: boolean;
+  order?: number;
 }
 
-export function KanbanCard({ task, isDragging = false }: KanbanCardProps) {
+export function KanbanCard({
+  task,
+  isDragging = false,
+  order,
+}: KanbanCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const {
@@ -28,7 +33,7 @@ export function KanbanCard({ task, isDragging = false }: KanbanCardProps) {
     isDragging: isSortableDragging,
   } = useSortable({
     id: task.id,
-    data: { task }
+    data: { task },
   });
 
   const style = {
@@ -142,9 +147,7 @@ export function KanbanCard({ task, isDragging = false }: KanbanCardProps) {
               {format(new Date(task.createdAt), "dd MMM", { locale: es })}
             </span>
           </div>
-          {task.position !== undefined && (
-            <span className="text-gray-300">#{task.position}</span>
-          )}
+          {order && <span className="text-gray-300">#{order}</span>}
         </div>
       </CardContent>
     </Card>

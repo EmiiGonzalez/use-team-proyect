@@ -1,7 +1,6 @@
 "use client";
 
-import BoardGrid from "@/components/boards/BoardGrid";
-
+import { BoardGrid } from "@/components/boards/BoardGrid";
 import { CreateBoardDialog } from "@/components/boards/CreateBoardDialog";
 import { useAllBoardsQuery } from "@/hooks/api/boards/useBoards";
 

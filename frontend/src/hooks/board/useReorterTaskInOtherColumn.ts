@@ -30,8 +30,8 @@ export const useReorderTaskInOtherColumn = () => {
     newCol.tasks.splice(newIndex, 1);
 
     // Intercambia los indices y posiciones
-    active.position = newIndex;
-    over.position = oldIndex;
+    active.position = overTask.position;
+    over.position = activeTask.position;
     active.columnId = newCol.id;
     over.columnId = oldCol.id;
 
@@ -39,10 +39,8 @@ export const useReorderTaskInOtherColumn = () => {
     newCol.tasks.splice(newIndex, 0, active);
     oldCol.tasks.splice(oldIndex, 0, over);
 
-    // Reasigna las posiciones en ambas columnas y fuerza nuevas referencias
-    oldCol.tasks = oldCol.tasks.map((task, idx) => ({ ...task, position: idx }));
-    newCol.tasks = newCol.tasks.map((task, idx) => ({ ...task, position: idx }));
-
+    //enviar put con el cambio de column al backend
+    console.log("updateando cambios", active, over);
 
     return updatedColumns.map(col => ({ ...col, tasks: [...col.tasks] }));
   };
@@ -51,21 +49,28 @@ export const useReorderTaskInOtherColumn = () => {
     if (task.columnId === column.id) {
       return columns;
     }
+    let taskUpdated: TaskDTO | null = null;
     const updatedColumns = columns.map((col) => {
       if (col.id === task.columnId) {
-        return {
-          ...col,
-          tasks: col.tasks.filter((t) => t.id !== task.id),
-        };
+      return {
+        ...col,
+        tasks: col.tasks.filter((t) => t.id !== task.id),
+      };
       }
       if (col.id === column.id) {
-        return {
-          ...col,
-          tasks: [...col.tasks, { ...task, columnId: col.id }],
-        };
+      const updatedTask = { ...task, columnId: col.id };
+      taskUpdated = updatedTask;
+      return {
+        ...col,
+        tasks: [...col.tasks, updatedTask],
+      };
       }
       return col;
     });
+    //enviar put con el cambio de column al backend
+    if (taskUpdated) {
+      console.log("updateando cambios", taskUpdated)
+    }
     return updatedColumns;
   };
 

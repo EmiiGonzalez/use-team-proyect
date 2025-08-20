@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
 import { AxiosError } from "axios";
 
-export function RegisterForm() {
+export const RegisterForm = () => {
   const router = useRouter();
   const { setToken } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);

@@ -1,9 +1,9 @@
 "use client";
 
 import { BoardDTO } from "@/models/board/BoardDTO";
-import BoardCard from "./BoardCard";
+import { BoardCard } from "./BoardCard";
 
-export default function BoardGrid({ boards }: { boards: BoardDTO[] }) {
+export const BoardGrid = ({ boards }: { boards: BoardDTO[] }) => {
   if (!boards.length) {
     return (
       <div className="rounded-xl border p-8 text-center">

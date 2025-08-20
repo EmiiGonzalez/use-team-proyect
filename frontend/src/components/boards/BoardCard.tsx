@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { BoardDTO } from "@/models/board/BoardDTO";
 
-export default function BoardCard({ board }: { board: BoardDTO }) {
+export const BoardCard = ({ board }: { board: BoardDTO }) => {
   const router = useRouter();
 
   return (

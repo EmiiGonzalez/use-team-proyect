@@ -1,12 +1,14 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   DndContext,
-  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  rectIntersection,
+  DragStartEvent,
+  DragEndEvent,
   DragOverlay,
-  type DragStartEvent,
-  closestCorners,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -27,19 +29,21 @@ import { useReorderTask } from "@/hooks/board/useReorterTask";
 import { useReorderTaskInOtherColumn } from "@/hooks/board/useReorterTaskInOtherColumn";
 import { ColumnDTO } from "@/models/column/ColumnDTO";
 import { useSortColumns } from "@/hooks/board/useSortColumns";
-
 export const KanbanBoard = () => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [activeTask, setActiveTask] = useState<TaskDTO | null>(null);
   const { id } = useParams<{ id: string }>();
+
   const { isUpdatingColumn, setIsUpdatingColumn, activeColumn } =
     useColumnStore();
   const [columns, setColumns] = useState<ColumnDTO[]>([]);
+  const sensors = useSensors(useSensor(PointerSensor));
 
   const { data: board } = useGetBoard(id);
   const { data } = useAllColumnQuery(id);
   const { reorderTask } = useReorderTask();
-  const { reorderTaskInOtherColumn, removeTaskAndAddInNewColumn } = useReorderTaskInOtherColumn();
+  const { reorderTaskInOtherColumn, removeTaskAndAddInNewColumn } =
+    useReorderTaskInOtherColumn();
 
   useSortColumns(data, setColumns);
 
@@ -69,12 +73,17 @@ export const KanbanBoard = () => {
     }
     const overId = over.id as string;
 
-    if(overId.includes("column-")){
+    if (overId.includes("column-")) {
       const overColumn = over.data.current?.column as ColumnDTO;
-      if(!overColumn) {return}
+      if (!overColumn) {
+        return;
+      }
       setColumns(removeTaskAndAddInNewColumn(activeTask, overColumn, columns));
       //si ubo cambios notifico
-      if (overColumn.tasks.length !== columns.find(col => col.id === activeTask.columnId)?.tasks.length) {
+      if (
+        overColumn.tasks.length !==
+        columns.find((col) => col.id === activeTask.columnId)?.tasks.length
+      ) {
         toast.success("Tarea movida exitosamente a otra columna");
       }
       return;
@@ -83,7 +92,15 @@ export const KanbanBoard = () => {
     const overTask = over.data.current?.task as TaskDTO;
     if (overTask.columnId == activeTask.columnId) {
       setColumns(reorderTask(activeTask, overTask, columns));
-      toast.success("Tarea movida exitosamente");
+      //corroboro que haya cambios
+      if (
+        overTask.position !==
+        columns
+          .find((col) => col.id === activeTask.columnId)
+          ?.tasks.find((task) => task.id === activeTask.id)?.position
+      ) {
+        toast.success("Tarea movida exitosamente");
+      }
     } else {
       setColumns(reorderTaskInOtherColumn(activeTask, overTask, columns));
       toast.success("Tarea movida exitosamente a otra columna");
@@ -104,11 +121,12 @@ export const KanbanBoard = () => {
       </div>
 
       <DndContext
-        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        sensors={sensors}
+        collisionDetection={rectIntersection}
       >
-        <div className="flex gap-6 overflow-x-auto pb-6">
+        <div className="flex gap-6 overflow-x-auto pb-6 pt-2 px-4">
           {columns && (
             <SortableContext
               items={columns.map((col) => col.id)}

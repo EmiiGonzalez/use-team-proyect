@@ -14,7 +14,7 @@ import { useAuthStore } from "@/store/auth/auth-store";
 import { AxiosError } from "axios";
 import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
 
-export function LoginForm() {
+export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
