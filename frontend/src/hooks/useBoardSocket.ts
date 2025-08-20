@@ -20,13 +20,13 @@ export const useBoardSocket = ({ boardId }: UseBoardSocketProps) => {
 
     // Listener específico para actualizaciones del board
     const handleBoardUpdate = ({
-      boardId,
+      boardId: updatedBoardId,
       userId,
     }: {
       boardId: string;
       userId: string;
     }) => {
-      if (boardId !== boardId) return; // Solo manejar actualizaciones del board actual
+      if (boardId != updatedBoardId) return; // Solo manejar actualizaciones del board actual
 
       if (userId == idUser) {
         return; // Ignorar actualizaciones del propio usuario
