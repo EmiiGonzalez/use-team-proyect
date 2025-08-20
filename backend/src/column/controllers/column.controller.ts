@@ -26,8 +26,8 @@ import {
 } from '../dtos/column.dtos';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { ColumnAccessGuard } from 'src/auth/guards/column.access.guard';
-import { GetUser } from 'src/auth/decorators/get.user.decorators';
-import type { IUserRequest } from 'src/auth/decorators/get.user.decorators';
+import { GetUser } from 'src/auth/decorators/get.user.decorator';
+import type { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 import { CheckOwner } from 'src/auth/decorators/check.owner.decorator';
 
 @ApiTags('Columns')

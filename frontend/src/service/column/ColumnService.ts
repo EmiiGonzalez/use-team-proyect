@@ -1,6 +1,7 @@
 import { CreateColumnForm } from "@/types/board/column/createColumnForm";
 import { createHttpClient } from "../../../client/HttpClient";
 import { ColumnDTO } from "@/models/column/ColumnDTO";
+import { UpdateColumnForm } from "@/types/board/column/updateColumnForm";
 
 const client = createHttpClient("api/v1/columns");
 
@@ -20,9 +21,13 @@ export const createColumn = async (
 };
 
 // Eliminar una columna
-export const deleteColumn = async (columnId: string, idBoard: string) => {
-  const response = await client.delete(`/${columnId}`, {
-    data: { idBoard: idBoard },
-  });
+export const deleteColumn = async (columnId: string) => {
+  const response = await client.delete(`/${columnId}`);
+  return response.data;
+};
+
+// Actualizar una columna
+export const updateColumn = async (columnData: UpdateColumnForm) => {
+  const response = await client.patch<ColumnDTO>(`/${columnData.id}`, columnData);
   return response.data;
 };

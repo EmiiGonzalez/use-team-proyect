@@ -13,8 +13,8 @@ import { CreateBoardDto } from '../dtos/create-board.dto';
 import { BoardResponseDto } from '../dtos/board-response.dto';
 import { UpdateBoardDto } from '../dtos/update-board.dto';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-import { GetUser } from 'src/auth/decorators/get.user.decorators';
-import type { IUserRequest } from 'src/auth/decorators/get.user.decorators';
+import { GetUser } from 'src/auth/decorators/get.user.decorator';
+import type { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 
 @ApiTags('Boards')
 @UseGuards(AuthGuard)

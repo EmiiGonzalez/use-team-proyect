@@ -11,7 +11,7 @@ import {
   ColumnDto
 } from '../dtos/column.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
-import { IUserRequest } from 'src/auth/decorators/get.user.decorators';
+import { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 import { Column } from '@prisma/client';
 import { log } from 'console';
 

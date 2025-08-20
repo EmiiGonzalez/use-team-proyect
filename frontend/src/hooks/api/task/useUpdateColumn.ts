@@ -2,20 +2,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
 import { ColumnDTO } from "@/models/column/ColumnDTO";
-import { deleteColumn } from "@/service/column/ColumnService";
+import { updateColumn } from "@/service/column/ColumnService";
+import { UpdateColumnForm } from "@/types/board/column/updateColumnForm";
 
 /**
- * Custom hook para eliminar una columna usando TanStack Query
+ * Custom hook para crear un tablero usando TanStack Query
  */
-export function useDeleteColumn() {
+export const useUpdateColumn = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<
     ColumnDTO,
     AxiosError<ApiErrorResponse>,
-    string
+    UpdateColumnForm
   >({
-    mutationFn: (columnId: string) => deleteColumn(columnId),
+    mutationFn: (data) => updateColumn(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["columns"] });
     },

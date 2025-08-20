@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -12,30 +12,41 @@ import {
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { KanbanColumn } from "./kanban-column";
-import { KanbanCard } from "./kanban-card";
+import { KanbanColumn } from "./column/KanbanColumn";
+import { KanbanCard } from "./card/KanbanCard";
 import { Button } from "@/components/ui/button";
-import { useKanbanStore } from "@/store/kanban-store";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { useGetBoard } from "@/hooks/api/boards/useBoards";
 import { useAllColumnQuery } from "@/hooks/api/column/useColumn";
 import { TaskDTO } from "@/models/task/taskDTO";
 import { AddColumnCard } from "./card/AddColumnCard";
+import { UpdateColumnDialog } from "./dialog/UpdateColumnDialog";
+import { useColumnStore } from "@/store/boards/column/useColumnStore";
+import { useReorderTask } from "@/hooks/board/useReorterTask";
+import { useReorderTaskInOtherColumn } from "@/hooks/board/useReorterTaskInOtherColumn";
+import { ColumnDTO } from "@/models/column/ColumnDTO";
+import { useSortColumns } from "@/hooks/board/useSortColumns";
 
-
-export function KanbanBoard() {
+export const KanbanBoard = () => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [activeTask, setActiveTask] = useState<TaskDTO | null>(null);
   const { id } = useParams<{ id: string }>();
-  const { addColumn, moveCard } = useKanbanStore();
+  const { isUpdatingColumn, setIsUpdatingColumn, activeColumn } =
+    useColumnStore();
+  const [columns, setColumns] = useState<ColumnDTO[]>([]);
 
   const { data: board } = useGetBoard(id);
-  const { data: columns } = useAllColumnQuery(id);
+  const { data } = useAllColumnQuery(id);
+  const { reorderTask } = useReorderTask();
+  const { reorderTaskInOtherColumn, removeTaskAndAddInNewColumn } = useReorderTaskInOtherColumn();
+
+  useSortColumns(data, setColumns);
+
   const lastColumnPosition =
-  columns && columns.length > 0
-    ? Math.max(...columns.map(col => col.position))
-    : 0;
+    columns && columns.length > 0
+      ? Math.max(...columns.map((col) => col.position))
+      : 0;
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -51,33 +62,35 @@ export function KanbanBoard() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveTask(null);
-
-    if (!over) return;
-
-    const taskId = active.id as string;
+    const activeTask = active.data.current?.task as TaskDTO;
+    if (!over || !active) {
+      setActiveTask(null);
+      return;
+    }
     const overId = over.id as string;
 
-    // Si se suelta sobre una columna
-    if (overId.startsWith("column-")) {
-      const targetColumnId = overId.replace("column-", "");
-      await moveCard(taskId, targetColumnId);
-      toast.success("Tarea movida");
-    }
-    // Si se suelta sobre otra tarea, mover a esa columna
-    else {
-      const targetTask = columns
-        ?.flatMap((col) => col.tasks)
-        .find((task) => task.id === overId);
-
-      if (targetTask && targetTask.columnId !== activeTask?.columnId) {
-        await moveCard(taskId, targetTask.columnId);
-        toast.success("Tarea movida");
+    if(overId.includes("column-")){
+      const overColumn = over.data.current?.column as ColumnDTO;
+      if(!overColumn) {return}
+      setColumns(removeTaskAndAddInNewColumn(activeTask, overColumn, columns));
+      //si ubo cambios notifico
+      if (overColumn.tasks.length !== columns.find(col => col.id === activeTask.columnId)?.tasks.length) {
+        toast.success("Tarea movida exitosamente a otra columna");
       }
+      return;
     }
+
+    const overTask = over.data.current?.task as TaskDTO;
+    if (overTask.columnId == activeTask.columnId) {
+      setColumns(reorderTask(activeTask, overTask, columns));
+      toast.success("Tarea movida exitosamente");
+    } else {
+      setColumns(reorderTaskInOtherColumn(activeTask, overTask, columns));
+      toast.success("Tarea movida exitosamente a otra columna");
+    }
+
+    setActiveTask(null);
   };
-
-
 
   return (
     <div className="h-full">
@@ -108,7 +121,11 @@ export function KanbanBoard() {
           )}
 
           {isAddingColumn && (
-            <AddColumnCard setIsAddingColumn={setIsAddingColumn} idBoard={id} lastColumnPosition={lastColumnPosition} />
+            <AddColumnCard
+              setIsAddingColumn={setIsAddingColumn}
+              idBoard={id}
+              lastColumnPosition={lastColumnPosition}
+            />
           )}
         </div>
 
@@ -116,6 +133,14 @@ export function KanbanBoard() {
           {activeTask ? <KanbanCard task={activeTask} isDragging /> : null}
         </DragOverlay>
       </DndContext>
+
+      {activeColumn && (
+        <UpdateColumnDialog
+          open={isUpdatingColumn}
+          setOpen={setIsUpdatingColumn}
+          column={activeColumn}
+        />
+      )}
     </div>
   );
-}
+};

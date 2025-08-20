@@ -1,30 +1,29 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/service/prisma.service';
-import { CreateTaskDto } from '../dtos/create-task.dto';
-import { ListTasksQueryDto } from '../dtos/list-tasks-query.dto';
-import { UpdateTaskDto, UpdateTasksPositionDto } from '../dtos/update-task.dto';
+import { CreateTaskDto } from '../dtos/create.task.dto';
+import { UpdateTaskDto, UpdateTasksPositionDto } from '../dtos/update.task.dto';
 
 @Injectable()
 export class TaskService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateTaskDto) {
+  async create(dto: CreateTaskDto, columnId: string, boardId: string, idUser: string) {
     // busco el numero de la ultima tarea creada
     const lastOrderTask = await this.prisma.task.findFirst({
-      where: { columnId: dto.columnId },
+      where: { columnId: columnId },
       orderBy: { position: 'desc' }
     });
-    dto.position = lastOrderTask ? lastOrderTask.position + 1 : 1;
-    return this.prisma.task.create({ data: dto });
-  }
-
-  findAll(query: ListTasksQueryDto) {
-    const { boardId, columnId } = query;
-    return this.prisma.task.findMany({
-      where: { boardId, columnId },
-      orderBy: [{ columnId: 'asc' }, { position: 'asc' }]
-    });
+    
+    return this.prisma.task.create({ data : {
+      boardId: boardId,
+      columnId: columnId,
+      creatorId: idUser,
+      name: dto.name,
+      description: dto.description,
+      status: dto.status,
+      position: lastOrderTask ? lastOrderTask.position + 1 : 1
+    } });
   }
 
   async findOne(id: string) {

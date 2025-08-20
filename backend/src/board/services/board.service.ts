@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/service/prisma.service';
 import { CreateBoardDto } from '../dtos/create-board.dto';
 import { UpdateBoardDto } from '../dtos/update-board.dto';
 import { BoardResponseDto } from '../dtos/board-response.dto';
-import { IUserRequest } from 'src/auth/decorators/get.user.decorators';
+import { IUserRequest } from 'src/auth/decorators/get.user.decorator';
 import { Board } from '@prisma/client';
 
 @Injectable()

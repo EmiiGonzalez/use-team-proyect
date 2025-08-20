@@ -36,7 +36,7 @@ export class TaskResponseDto {
     description: 'Descripción de la tarea',
     example: 'Crear la pantalla de login y la lógica de autenticación'
   })
-  description?: string;
+  description: string;
 
   @ApiPropertyOptional({
     enum: TaskStatus,
@@ -62,6 +62,7 @@ export class TaskResponseDto {
       ? (this.creatorId = task.creatorId)
       : (this.creatorId = undefined);
     this.name = task.name;
+    task.description && (this.description = task.description);
     this.status = task.status;
     this.position = task.position;
     this.createdAt = task.createdAt;

@@ -14,7 +14,7 @@ import { Column } from '@prisma/client';
  * @description Este guards se encarga de validar los accesos a las columnas
  */
 @Injectable()
-export class ColumnAccessGuard implements CanActivate {
+export class TaskAccessGuard implements CanActivate {
   constructor(
     private readonly prisma: PrismaService,
     private readonly reflector: Reflector
@@ -32,41 +32,37 @@ export class ColumnAccessGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
-
     const request = context.switchToHttp().getRequest();
-    const userId: string = request['idUser']; 
-    let { boardId } = request.params; 
+    const userId: string = request['idUser'];
 
-    if (!boardId) {
-      const { id } = request.params;
-      if (!id) { 
-        throw new UnauthorizedException(
-          'No se proporcionó el ID de la columna'
-        );
-      }
-      const column: Column | null = await this.prisma.column.findUnique({
-        where: { id }
-      });
-      if (!column) {
-        throw new NotFoundException('Columna no encontrada');
-      }
-      boardId = column.boardId;
+    //id de la column que se apunta
+    let { id } = request.params;
+    if (!id) {
+      throw new UnauthorizedException('No se proporcionó el ID de la columna');
     }
 
-    if (!userId || !boardId) {
+    const column: Column | null = await this.prisma.column.findUnique({
+      where: { id }
+    });
+
+    if (!column) {
+      throw new NotFoundException('Columna no encontrada');
+    }
+
+    if (!userId || !column.boardId) {
       throw new UnauthorizedException(
-        'No se proporcionó el ID del usuario o del board'
+        `${!userId ? 'No se proporcionó el ID del usuario' : 'El board no existe' }`
       );
     }
 
     const board = await this.prisma.board.findUnique({
-      where: { id: boardId }
+      where: { id: column.boardId, AND: { ownerId: userId } }
     });
     if (!board) throw new NotFoundException('Board no encontrada');
 
     //busco si es miembro
     const isMember = await this.prisma.boardMember.findFirst({
-      where: { boardId, userId: userId }
+      where: { boardId: column.boardId, userId: userId }
     });
 
     // si no es miembro ni creador lanzo la excepcion
@@ -75,9 +71,12 @@ export class ColumnAccessGuard implements CanActivate {
     }
 
     if (checkOwner && board.ownerId !== userId) {
-      throw new UnauthorizedException('No tienes permiso para acceder a este recurso');
+      throw new UnauthorizedException(
+        'No tienes permiso para acceder a este recurso'
+      );
     }
 
+    request.idBoard = column.boardId;
     return true;
   }
 }
