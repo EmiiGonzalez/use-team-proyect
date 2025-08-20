@@ -91,6 +91,38 @@ export class TaskService {
     this.eventsService.pub('board_updated', { boardId: task.boardId });
     return updated;
   }
+  async updateSimpleData(idColumn: string, dto: UpdateTaskDto, idUser: string) {
+    const task: Task = await this.ensureExists(dto.id);
+
+    if (idColumn != task.columnId) {
+      const column = await this.prisma.column.findUnique({
+        where: { id: task.columnId }
+      });
+      if (!column) throw new NotFoundException('Columna no encontrada');
+
+      const isMember = await this.prisma.boardMember.findUnique({
+        where: { boardId_userId: { boardId: column.boardId, userId: idUser } }
+      });
+
+      const board = await this.prisma.board.findUnique({
+        where: { id: column.boardId }
+      });
+      const isOwner = board?.ownerId == idUser;
+      if (!isMember && !isOwner)
+        throw new NotFoundException('Usuario no es miembro del tablero');
+    }
+
+    const updated = await this.prisma.task.update({
+      where: { id: task.id },
+      data: {
+        name: dto.name,
+        description: dto.description,
+        status: dto.status,
+      }
+    });
+    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    return updated;
+  }
 
   async updatePosition(dto: UpdateTasksPositionDto) {
     const positions = dto.tasks.map((item) => item.position);

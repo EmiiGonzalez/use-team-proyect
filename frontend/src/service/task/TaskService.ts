@@ -33,7 +33,7 @@ export const deleteTask = async (columnId: string, taskId: string) => {
 // Actualizar una tarea
 export const updateTask = async (taskData: UpdateTaskForm) => {
   const response = await client.patch<TaskDTO>(
-    `/${taskData.columnId}`,
+    `update/${taskData.columnId}`,
     taskData
   );
   return response.data;

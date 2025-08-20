@@ -30,6 +30,8 @@ import { useReorderTaskInOtherColumn } from "@/hooks/board/useReorterTaskInOther
 import { ColumnDTO } from "@/models/column/ColumnDTO";
 import { useSortColumns } from "@/hooks/board/useSortColumns";
 import { useBoardSocket } from "@/hooks/useBoardSocket";
+import { useTaskStore } from "@/store/boards/task/useTaskStore";
+import { UpdateTaskDialog } from "./dialog/UpdateTaskDialog";
 export const KanbanBoard = () => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [activeTask, setActiveTask] = useState<TaskDTO | null>(null);
@@ -37,12 +39,18 @@ export const KanbanBoard = () => {
 
   const { isUpdatingColumn, setIsUpdatingColumn, activeColumn } =
     useColumnStore();
+  const {
+    isUpdatingTask,
+    setIsUpdatingTask,
+    activeTask: task,
+    setActiveTask: setTask,
+  } = useTaskStore();
   const [columns, setColumns] = useState<ColumnDTO[]>([]);
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const { data: board } = useGetBoard(id);  
+  const { data: board } = useGetBoard(id);
   const { data } = useAllColumnQuery(id);
-  
+
   useBoardSocket({ boardId: id });
   const { reorderTask } = useReorderTask();
   const { reorderTaskInOtherColumn, removeTaskAndAddInNewColumn } =
@@ -153,6 +161,16 @@ export const KanbanBoard = () => {
           open={isUpdatingColumn}
           setOpen={setIsUpdatingColumn}
           column={activeColumn}
+        />
+      )}
+
+      {task && (
+        <UpdateTaskDialog
+          open={isUpdatingTask}
+          setOpen={setIsUpdatingTask}
+          task={task}
+          setTask={setTask}
+          columnId={task.columnId}
         />
       )}
     </div>

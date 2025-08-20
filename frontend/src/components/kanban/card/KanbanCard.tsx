@@ -6,12 +6,19 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskDTO, TaskStatus } from "@/models/task/taskDTO";
-import { ChevronDown, ChevronRight, Trash2, Calendar } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Trash2,
+  Calendar,
+  Edit3,
+} from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { statusConfig } from "@/components/utils/StatusConfig";
 import { useDeleteTask } from "@/hooks/api/task/useDeleteTask";
 import { toast } from "sonner";
+import { useTaskStore } from "@/store/boards/task/useTaskStore";
 
 interface KanbanCardProps {
   task: TaskDTO;
@@ -25,6 +32,7 @@ export function KanbanCard({
   order,
 }: KanbanCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const { setIsUpdatingTask, setActiveTask } = useTaskStore();
   const { mutate: deleteTask } = useDeleteTask();
 
   const {
@@ -47,14 +55,17 @@ export function KanbanCard({
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteTask({ columnId: task.columnId, taskId: task.id },
+    deleteTask(
+      { columnId: task.columnId, taskId: task.id },
       {
         onSuccess: () => {
-         toast.success("Tarea eliminada correctamente");
+          toast.success("Tarea eliminada correctamente");
         },
         onError: (error) => {
-          toast.error(error.response?.data.message || "Error al eliminar la tarea");
-        }
+          toast.error(
+            error.response?.data.message || "Error al eliminar la tarea"
+          );
+        },
       }
     );
     return;
@@ -99,15 +110,29 @@ export function KanbanCard({
           <h4 className="font-medium text-sm text-gray-900 dark:text-white leading-tight flex-1">
             {task.name}
           </h4>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 shrink-0"
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+          <div className=" flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 shrink-0 cursor-pointer"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => {
+                setIsUpdatingTask(true);
+                setActiveTask(task);
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <Edit3 className="h-3 w-3 text-gray-400 hover:text-gray-500" />
+            </Button>
+          </div>
         </div>
 
         {/* Status badge */}

@@ -129,4 +129,31 @@ export class TaskController {
   remove(@Body() {id}: { id: string }) {
     return this.service.remove(id);
   }
+
+
+  /**
+   * Actualiza una tarea
+   * @param id ID de la columna a la que pertenece la tarea
+   * @param dto Datos de actualización
+   */
+  @Patch('update/:id')
+  @ApiOperation({
+    summary: 'Actualizar una tarea',
+    description: 'Actualiza los datos de una tarea específica.'
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tarea', type: String })
+  @ApiBody({ type: UpdateTaskDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarea actualizada',
+    type: UpdateTaskDto
+  })
+  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
+  updateSimpleData(
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+    @GetUser() user: IUserRequest
+  ) {
+    return this.service.updateSimpleData(id, dto, user.id);
+  }
 }
