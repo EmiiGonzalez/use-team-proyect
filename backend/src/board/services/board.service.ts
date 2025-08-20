@@ -9,7 +9,7 @@ import { CreateBoardDto } from '../dtos/create-board.dto';
 import { UpdateBoardDto } from '../dtos/update-board.dto';
 import { BoardResponseDto } from '../dtos/board-response.dto';
 import { IUserRequest } from 'src/auth/decorators/get.user.decorator';
-import { Board } from '@prisma/client';
+import { Board, BoardMember } from '@prisma/client';
 
 @Injectable()
 export class BoardService {
@@ -43,8 +43,18 @@ export class BoardService {
    * Obtiene un tablero por su ID
    */
 
-  async findOne(id: string): Promise<BoardResponseDto> {
+  async findOne(id: string, userId: string): Promise<BoardResponseDto> {
     const board = await this.prisma.board.findUnique({ where: { id } });
+    const boardMembers : BoardMember[] = await this.prisma.boardMember.findMany({
+      where: { boardId: id }
+    });
+
+    const userBoardMember = boardMembers.find((member) => member.userId === userId);
+
+    if (!userBoardMember) {
+      throw new ForbiddenException('No tienes acceso a este tablero');
+    }
+
     if (!board) throw new NotFoundException('Board not found');
     return new BoardResponseDto(board);
   }

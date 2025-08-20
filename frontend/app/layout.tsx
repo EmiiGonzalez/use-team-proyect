@@ -30,14 +30,14 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
         <ReactQueryProvider>
           <SocketProvider>
             <Navbar />
-            <main className="px-4 py-4 bg-gray-50 dark:bg-gray-900 w-full">
-              <div className="w-full">{children}</div>
+            <main className="px-4 py-4 bg-gray-50 dark:bg-gray-900 w-full h-full">
+              <div className="w-full h-full">{children}</div>
             </main>
-            <Toaster position="top-right" />
+            <Toaster position="top-center" />
           </SocketProvider>
         </ReactQueryProvider>
       </body>

@@ -35,8 +35,8 @@ export class BoardController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un board por ID' })
   @ApiResponse({ status: 200, type: BoardResponseDto })
-  async findOne(@Param('id') id: string): Promise<BoardResponseDto> {
-    return this.boardService.findOne(id);
+  async findOne(@Param('id') id: string, @GetUser() user: IUserRequest): Promise<BoardResponseDto> {
+    return this.boardService.findOne(id, user.id);
   }
 
   @Get()

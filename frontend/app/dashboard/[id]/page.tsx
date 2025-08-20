@@ -1,5 +1,5 @@
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 
 export default function DashboardPage() {
-  return <KanbanBoard />;
+  return <div className="h-full">{<KanbanBoard />}</div>;
 }
