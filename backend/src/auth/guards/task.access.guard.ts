@@ -69,7 +69,7 @@ export class TaskAccessGuard implements CanActivate {
     }
 
     const board = await this.prisma.board.findUnique({
-      where: { id: column.boardId, AND: { ownerId: userId } }
+      where: { id: column.boardId }
     });
     if (!board) throw new NotFoundException('Board no encontrada');
 
