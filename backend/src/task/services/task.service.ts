@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/service/prisma.service';
+import { EventsService } from 'src/events/events.service';
 import { CreateTaskDto } from '../dtos/create.task.dto';
 import {
   UpdateTaskDto,
@@ -17,7 +18,10 @@ import { log } from 'console';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService
+  ) {}
 
   async create(
     dto: CreateTaskDto,
@@ -31,7 +35,7 @@ export class TaskService {
       orderBy: { position: 'desc' }
     });
 
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         boardId: boardId,
         columnId: columnId,
@@ -42,6 +46,8 @@ export class TaskService {
         position: lastOrderTask ? lastOrderTask.position + 1 : 1
       }
     });
+    this.eventsService.pub('board_updated', { boardId });
+    return task;
   }
 
   async findOne(id: string) {
@@ -71,7 +77,7 @@ export class TaskService {
         throw new NotFoundException('Usuario no es miembro del tablero');
     }
 
-    return this.prisma.task.update({
+    const updated = await this.prisma.task.update({
       where: { id: task.id },
       data: {
         columnId: dto.columnId,
@@ -82,6 +88,8 @@ export class TaskService {
           dto.position < 0 ? -Math.abs(dto.position) : Math.abs(dto.position)
       }
     });
+    this.eventsService.pub('board_updated', { boardId: task.boardId });
+    return updated;
   }
 
   async updatePosition(dto: UpdateTasksPositionDto) {
@@ -151,7 +159,7 @@ export class TaskService {
   }
 
   async remove(id: string) {
-    log(id)
+    log(id);
     await this.ensureExists(id);
     return this.prisma.task.delete({ where: { id } });
   }

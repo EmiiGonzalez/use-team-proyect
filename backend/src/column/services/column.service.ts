@@ -1,31 +1,31 @@
 import {
-  BadRequestException,
   Injectable,
-  NotFoundException,
-  UnauthorizedException
-} from '@nestjs/common';
+  NotFoundException} from '@nestjs/common';
 import {
   CreateColumnDto,
   UpdateColumnDto,
-  ListUpdatePositionDto,
   ColumnDto
 } from '../dtos/column.dtos';
 import { PrismaService } from 'src/prisma/service/prisma.service';
-import { IUserRequest } from 'src/auth/decorators/get.user.decorator';
+import { EventsService } from 'src/events/events.service';
 import { Column } from '@prisma/client';
-import { log } from 'console';
 
 @Injectable()
 export class ColumnService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService
+  ) {}
 
   async create(idBoard: string, dto: CreateColumnDto) {
-    return this.prisma.column.create({
+    const column = await this.prisma.column.create({
       data: {
         name: dto.name,
-        boardId: idBoard,
+        boardId: idBoard
       }
     });
+    this.eventsService.pub('board_updated', { boardId: idBoard });
+    return column;
   }
 
   async findAll(boardId: string) {
@@ -35,7 +35,7 @@ export class ColumnService {
         tasks: true
       }
     });
-    
+
     return columns.map((col) => new ColumnDto(col));
   }
 
@@ -46,8 +46,13 @@ export class ColumnService {
   }
 
   async update(id: string, dto: UpdateColumnDto) {
-    await this.ensureExists(id);
-    return this.prisma.column.update({ where: { id }, data: dto });
+    const column = await this.ensureExists(id);
+    const updated = await this.prisma.column.update({
+      where: { id },
+      data: dto
+    });
+    this.eventsService.pub('board_updated', { boardId: column.boardId });
+    return updated;
   }
 
   async remove(id: string) {

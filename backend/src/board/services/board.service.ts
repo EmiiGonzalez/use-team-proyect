@@ -4,6 +4,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/service/prisma.service';
+import { EventsService } from 'src/events/events.service';
 import { CreateBoardDto } from '../dtos/create-board.dto';
 import { UpdateBoardDto } from '../dtos/update-board.dto';
 import { BoardResponseDto } from '../dtos/board-response.dto';
@@ -12,7 +13,10 @@ import { Board } from '@prisma/client';
 
 @Injectable()
 export class BoardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService
+  ) {}
 
   /**
    * Crea un nuevo tablero
@@ -27,6 +31,8 @@ export class BoardService {
         ownerId: user.id
       }
     });
+    // Notificar a los usuarios del board
+    this.eventsService.pub('board_updated', { boardId: board.id });
     return new BoardResponseDto(board);
   }
 
@@ -78,6 +84,8 @@ export class BoardService {
       }
     });
 
+    // Notificar a los usuarios del board
+    this.eventsService.pub('board_updated', { boardId: updatedBoard.id });
     return new BoardResponseDto(updatedBoard);
   }
 }
