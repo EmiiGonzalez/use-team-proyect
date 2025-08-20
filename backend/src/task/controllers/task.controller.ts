@@ -50,13 +50,13 @@ export class TaskController {
     type: CreateTaskDto
   })
   @ApiBody({ type: CreateTaskDto })
-  create(
+  async create(
     @Param('id') id: string,
     @Body() dto: CreateTaskDto,
     @GetUser() user: IUserRequest,
     @GetIdBoard() idBoard: string
   ) {
-    return this.service.create(dto, id, idBoard, user.id);
+     return await this.service.create(dto, id, idBoard, user.id);
   }
 
   /**
@@ -77,12 +77,12 @@ export class TaskController {
     type: UpdateTaskDto
   })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() dto: UpdateTaskDto,
     @GetUser() user: IUserRequest
   ) {
-    return this.service.update(id, dto, user.id);
+    return await this.service.update(id, dto, user.id);
   }
 
   /**
@@ -102,7 +102,7 @@ export class TaskController {
     description: 'Tarea actualizada'
   })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  updateTasksPosition(
+  async updateTasksPosition(
     @Param('id') id: string,
     @Body() dto: UpdateTasksPositionDto,
     @GetUser() user: IUserRequest
@@ -112,7 +112,7 @@ export class TaskController {
         'No se pueden actualizar tareas en columnas diferentes'
       );
     }
-    return this.service.updatePosition(dto, user.id);
+    return await this.service.updatePosition(dto, user.id);
   }
 
   /**
@@ -150,11 +150,11 @@ export class TaskController {
     type: UpdateTaskDto
   })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
-  updateSimpleData(
+  async updateSimpleData(
     @Param('id') id: string,
     @Body() dto: UpdateTaskDto,
     @GetUser() user: IUserRequest
   ) {
-    return this.service.updateSimpleData(id, dto, user.id);
+    return await this.service.updateSimpleData(id, dto, user.id);
   }
 }

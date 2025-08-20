@@ -33,6 +33,15 @@ export const deleteTask = async (columnId: string, taskId: string) => {
 // Actualizar una tarea
 export const updateTask = async (taskData: UpdateTaskForm) => {
   const response = await client.patch<TaskDTO>(
+    `/${taskData.columnId}`,
+    taskData
+  );
+  return response.data;
+};
+
+// Actualizar una tarea
+export const updateTaskComplete = async (taskData: UpdateTaskForm) => {
+  const response = await client.patch<TaskDTO>(
     `update/${taskData.columnId}`,
     taskData
   );
@@ -50,7 +59,7 @@ export const updateTasksPositionInColumn = async (
   return response.data;
 };
 
-// Actualizar tareas dentro de la misma columna
+// Actualizar tareas en diferentes columnas
 export const updateTasksPositionInDifferentColumns = async (
   taskData: UpdateTaskPositionInDiferentColumns
 ) => {

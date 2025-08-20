@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
-import { updateTask, updateTasksPositionInColumn, updateTasksPositionInDifferentColumns } from "@/service/task/TaskService";
+import { updateTask, updateTaskComplete, updateTasksPositionInColumn, updateTasksPositionInDifferentColumns } from "@/service/task/TaskService";
 import { UpdateTaskForm, UpdateTaskPositionInDiferentColumns, UpdateTasksPositionForm } from "@/types/board/task/updateTaskForm";
 import { TaskDTO } from "@/models/task/taskDTO";
 
@@ -15,6 +15,21 @@ export const useUpdateTask = () => {
     UpdateTaskForm
   >({
     mutationFn: (data) => updateTask(data),
+    retry: false, 
+  });
+
+  return mutation;
+};
+/**
+ * Custom hook para actualizar una tarea usando TanStack Query
+ */
+export const useUpdateTaskComplete = () => {
+  const mutation = useMutation<
+    TaskDTO,
+    AxiosError<ApiErrorResponse>,
+    UpdateTaskForm
+  >({
+    mutationFn: (data) => updateTaskComplete(data),
     retry: false, 
   });
 

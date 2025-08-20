@@ -31,6 +31,7 @@ export class TaskColumnController {
     @Body() dto: UpdateTaskPositionInDiferentColumns,
     @GetUser() user: IUserRequest
   ) {
+    console.log("esta entrando aca")
     return await this.service.updatePositionInOtherColumn(dto, user.id);
   }
 }

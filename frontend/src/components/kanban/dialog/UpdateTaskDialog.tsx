@@ -22,11 +22,12 @@ import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiErrorResponse } from "@/interfaces/api/apiResponseInterface";
 import { AxiosError } from "axios";
-import { useUpdateTask } from "@/hooks/api/task/useUpdateTask";
+import { useUpdateTaskComplete } from "@/hooks/api/task/useUpdateTask";
 import { Edit3, FileText, ListTodo, Loader } from "lucide-react";
 import { TaskDTO, TaskStatus } from "@/models/task/taskDTO";
 import { UpdateTaskForm } from "@/types/board/task/updateTaskForm";
 import { statusOptions } from "@/components/utils/StatusTaskOptionConfig";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UpdateTaskDialogProps {
   open: boolean;
@@ -34,6 +35,7 @@ interface UpdateTaskDialogProps {
   task: TaskDTO;
   setTask: (task: TaskDTO | null) => void;
   columnId: string;
+  idBoard: string;
 }
 
 export const UpdateTaskDialog = ({
@@ -42,8 +44,9 @@ export const UpdateTaskDialog = ({
   task,
   setTask,
   columnId,
+  idBoard
 }: UpdateTaskDialogProps) => {
-  const { mutateAsync, isPending: loading } = useUpdateTask();
+  const { mutateAsync, isPending: loading } = useUpdateTaskComplete();
   const {
     register,
     handleSubmit,
@@ -60,6 +63,7 @@ export const UpdateTaskDialog = ({
       id: task.id || "",
     },
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     reset({
@@ -75,6 +79,7 @@ export const UpdateTaskDialog = ({
     await mutateAsync(data, {
       onSuccess: () => {
         toast.success("Tarea actualizada exitosamente");
+        queryClient.invalidateQueries({ queryKey: ["columns", idBoard] });
         setOpen(false);
       },
       onError: (error: AxiosError<ApiErrorResponse>) => {

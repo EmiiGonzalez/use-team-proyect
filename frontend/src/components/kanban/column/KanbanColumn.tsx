@@ -38,8 +38,8 @@ export const KanbanColumn = ({ column }: KanbanColumnProps) => {
       onSuccess: () => {
         toast.success("Columna eliminada");
       },
-      onError: () => {
-        toast.error("Error al eliminar la columna");
+      onError: (error) => {
+        toast.error(error.response?.data?.message || "Error al eliminar la columna");
       },
     });
   };

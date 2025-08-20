@@ -56,6 +56,9 @@ export class TaskService {
     return found;
   }
 
+  /**
+   * Actualiza una tarea utilizado para cambiar de columna
+   */
   async update(idColumn: string, dto: UpdateTaskDto, idUser: string) {
     const task: Task = await this.ensureExists(dto.id);
 
@@ -84,13 +87,24 @@ export class TaskService {
         name: dto.name,
         description: dto.description,
         status: dto.status,
-        position:
-          dto.position < 0 ? -Math.abs(dto.position) : Math.abs(dto.position)
+        position: dto.position
       }
     });
-    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
+
+    this.eventsService.pub('board_updated', {
+      boardId: task.boardId,
+      userId: idUser
+    });
     return updated;
   }
+
+  /**
+   * Actualiza una tarea
+   * @param idColumn ID de la columna a la que pertenece la tarea
+   * @param dto Datos de actualización
+   * @param idUser ID del usuario que realiza la acción
+   * @returns La tarea actualizada
+   */
   async updateSimpleData(idColumn: string, dto: UpdateTaskDto, idUser: string) {
     const task: Task = await this.ensureExists(dto.id);
 
@@ -117,13 +131,19 @@ export class TaskService {
       data: {
         name: dto.name,
         description: dto.description,
-        status: dto.status,
+        status: dto.status
       }
     });
-    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
+    this.eventsService.pub('board_updated', {
+      boardId: task.boardId,
+      userId: idUser
+    });
     return updated;
   }
 
+  /**
+   * Actualiza la posición de las tareas en una misma columna
+   */
   async updatePosition(dto: UpdateTasksPositionDto, idUser: string) {
     const positions = dto.tasks.map((item) => item.position);
     const seen = new Set<number>();
@@ -149,7 +169,10 @@ export class TaskService {
       });
     }
 
-    this.eventsService.pub('board_updated', { boardId: tasks[0].boardId, userId: idUser });
+    this.eventsService.pub('board_updated', {
+      boardId: tasks[0].boardId,
+      userId: idUser
+    });
     return { message: 'Posiciones actualizadas correctamente' };
   }
 
@@ -182,14 +205,16 @@ export class TaskService {
 
     await this.prisma.task.update({
       where: { id: taskA.id },
-      data: { position: dto.taskB.position, columnId: dto.taskB.columnId }
+      data: { position: dto.taskA.position, columnId: dto.taskA.columnId }
     });
     await this.prisma.task.update({
       where: { id: taskB.id },
-      data: { position: dto.taskA.position, columnId: dto.taskA.columnId }
+      data: { position: dto.taskB.position, columnId: dto.taskB.columnId }
     });
-
-    this.eventsService.pub('board_updated', { boardId: taskA.boardId, userId: idUser });
+    this.eventsService.pub('board_updated', {
+      boardId: taskA.boardId,
+      userId: idUser
+    });
     return { message: 'Posiciones actualizadas correctamente' };
   }
 
@@ -197,7 +222,10 @@ export class TaskService {
     const task = await this.ensureExists(id);
 
     await this.prisma.task.delete({ where: { id } });
-    this.eventsService.pub('board_updated', { boardId: task.boardId, userId: idUser });
+    this.eventsService.pub('board_updated', {
+      boardId: task.boardId,
+      userId: idUser
+    });
     return { message: 'Tarea eliminada correctamente' };
   }
 
