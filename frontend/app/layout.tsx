@@ -7,7 +7,7 @@ import "./globals.css";
 import ReactQueryProvider from "../src/components/ReactQueryProvider";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/navbar/navbar";
-import { SocketProvider } from "@/components/webSocketProvider";
+import { SocketProvider } from "@/components/WebSocketProvider";
 
 export const metadata: Metadata = {
   title: "Tablero Kanban Colaborativo",

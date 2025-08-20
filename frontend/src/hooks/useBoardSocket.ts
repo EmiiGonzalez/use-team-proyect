@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSocket } from "@/components/webSocketProvider";
+import { useSocket } from "@/components/WebSocketProvider";
 import { useAuthStore } from "@/store/auth/auth-store";
 import { toast } from "sonner";
 
